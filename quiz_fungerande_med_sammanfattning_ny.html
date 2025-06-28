@@ -1,0 +1,341 @@
+
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8">
+  <title>Flexibelt Quiz</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+    .question { margin-bottom: 20px; }
+    button { margin-top: 10px; }
+    #score { font-weight: bold; margin-top: 20px; }
+  </style>
+</head>
+<body>
+
+  <h1>Flexibelt Quiz</h1>
+  <label for="numQuestions">Hur många frågor vill du ha?</label>
+  <input type="number" id="numQuestions" min="1" max="30" value="2">
+  <button onclick="startQuiz()">Starta quiz</button>
+
+  <div id="quiz-container"></div>
+  <button id="nextBtn" onclick="nextQuestion()" style="display:none;">Nästa fråga</button>
+  <p id="result"></p>
+  <p id="score"></p>
+
+  <script>
+
+
+const questions = [
+  {
+    question: "Je ne peux pas [m’en passer].",
+    options: ["changer de place", "aller devant", "être dépassé", "être sans"],
+    answer: "être sans"
+  },
+  {
+    question: "[Ils n’ont pas les moyens].",
+    options: ["Ils ont un creux", "Ils sont extrêmes", "Ils n’ont pas assez d’argent", "Ils manquent d’outils"],
+    answer: "Ils n’ont pas assez d’argent"
+  },
+  {
+    question: "D’où viennent ces pensées [sombres] ?",
+    options: ["interdites", "noires", "bizarres", "optimistes"],
+    answer: "noires"
+  },
+  {
+    question: "[Est-ce que tu m’en veux ?]",
+    options: ["Que veux-tu de moi ?", "Es-tu en colère contre moi ?", "Est-ce que tu me veux ?", "Qu’est-ce que tu me veux ?"],
+    answer: "Es-tu en colère contre moi ?"
+  },
+  {
+    question: "À force d’être tellement [solennel], son discours nous a fait rire.",
+    options: ["humoristique", "grave", "mal formulé", "idiot"],
+    answer: "grave"
+  },
+  {
+    question: "Il ne faut pas [confondre] ces deux termes.",
+    options: ["distinguer", "mélanger", "comparer", "mijoter"],
+    answer: "mélanger"
+  },
+  {
+    question: "Est-ce que tu as vu [mon bouquin] ? Je ne sais plus où je l’ai mis.",
+    options: ["mon livre", "ma veste", "mon sac à main", "ma caisse"],
+    answer: "mon livre"
+  },
+  {
+    question: "[Elle n’a pas de goût]. ",
+    options: ["Elle n’a pas de courage.", "Elle n’a pas de bon sens.", "Elle n’a pas de classe.", "Elle n’a pas de soucis."],
+    answer: "Elle n’a pas de classe."
+  },
+  {
+    question: "Je l’ai vue [tout à l’heure].",
+    options: ["très bientôt", "toutes les heures", "il y a très peu de temps", "il y a pas mal de temps"],
+    answer: "il y a très peu de temps"
+  },
+  {
+    question: "Ce bâtiment est très [ancien].",
+    options: ["atroce", "humide", "soigné", "vieux"],
+    answer: "vieux"
+  },
+  {
+    question: "Cette veste [n’est pas à ma taille].",
+    options: ["n’a pas une bonne coupe", "n’a pas mes dimensions", "n’est pas de mon âge", "n’est pas à mon goût"],
+    answer: "n’a pas mes dimensions"
+  },
+  {
+    question: "[Quand] je lui parle, il s'en va.",
+    options: ["lorsque", "bien que", "puisque", "sans que"],
+    answer: "lorsque"
+  },
+  {
+    question: "Ils ont fait une excellente [communication].",
+    options: ["consultation", "interprétation", "présentation", "proposition"],
+    answer: "présentation"
+  },
+  {
+    question: "[Le lendemain], nous sommes allés nous baigner.",
+    options: ["le jour suivant", "demain", "hier", "dans l’après-midi"],
+    answer: "le jour suivant"
+  },
+  {
+    question: "Il [avait appris] le suédois à des refugiés en Finlande.",
+    options: ["avait enseigné", "avait connu", "avait maîtrisé", "avait abandonné"],
+    answer: "avait enseigné"
+  },
+  {
+    question: "Il est venu me voir [à l'improviste].",
+    options: ["comme prévu", "sans que je m'y attende", "à l'heure fixée", "trop tard"],
+    answer: "sans que je m'y attende"
+  },
+  {
+    question: "[Elle m'a trompé].",
+    options: ["Elle a fait une erreur.", "Elle a été infidèle.", "Elle a du succès.", "Elle a sifflé."],
+    answer: "Elle a été infidèle."
+  },
+  {
+    question: "Sophie [a senti une douleur à] sa jambe droite.",
+    options: ["a eu une sensation de chaleur à", "a eu une piqure à", "a eu mal à", "a senti un poids à"],
+    answer: "a eu mal à"
+  },
+  {
+    question: "Mais il l'a lu avec un [léger] accent flamand d'Anvers.",
+    options: ["petit", "fort", "grand", "élégant"],
+    answer: "petit"
+  },
+  {
+    question: "Quelqu'un [veillait sur moi].",
+    options: ["me regardait en secret", "me voulait du mal", "me faisait vieillir", "me surveillait"],
+    answer: "me surveillait"
+  },
+  {
+    question: "Et [aussitôt], un sourire ironique a éclairé son visage.",
+    options: ["immédiatement", "quelque temps après", "de la même façon", "tout d'un coup"],
+    answer: "immédiatement"
+  },
+  {
+    question: "La fenêtre donnait sur une rue [étroite].",
+    options: ["grande", "peu large", "vide", "courte"],
+    answer: "peu large"
+  },
+  {
+    question: "Comment peux tu être si [gauche] ?",
+    options: ["bête", "maladroit", "nul", "mal élevé"],
+    answer: "maladroit"
+  },
+  {
+    question: "Le Louvre est un [vaste] musée.",
+    options: ["immense", "fameux", "mauvais", "curieux"],
+    answer: "immense"
+  },
+  {
+    question: "Pendant le tremblement de terre on a été cloué [au sol]. ",
+    options: ["ensemble", "par terre", "au mur", "à la maison"],
+    answer: "par terre"
+  },
+  {
+    question: "Michèle est une personne très [souple].",
+    options: ["sympathique", "flexible", "agréable", "compétente"],
+    answer: "flexible"
+  },
+  {
+    question: "Il pleut mais je sors [quand même].",
+    options: ["quand je veux", "de toute façon ", "en effet", "toujours"],
+    answer: "de toute façon "
+  },
+  {
+    question: "Il s'agit d'une [vaste] problématique.",
+    options: ["intéressante", "troublante", "grande", "intense"],
+    answer: "grande"
+  },
+  {
+    question: "[Alors], le train s'est mis en marche.",
+    options: ["Après", "À ce moment-là", "Malgré tout", "Ainsi"],
+    answer: "À ce moment-là"
+  },
+  {
+    question: "[Je me méfie de lui.] ",
+    options: ["Je n’ai pas confiance en lui.", "Je ne m’intéresse pas à lui.", "Je suis amoureux de lui.", "Je lui en veux."],
+    answer: "Je n’ai pas confiance en lui."
+  },
+  {
+    question: "[Tu y arriveras.] ",
+    options: ["Tu partiras là-bas.", "Tu viendras ici.", "Tu en sortiras.", "Tu réussiras."],
+    answer: "Tu réussiras."
+  },
+  {
+    question: "Tu devrais [te renseigner].",
+    options: ["changer d’avis", "te laisser convaincre ", "t’informer", "te soigner"],
+    answer: "t’informer"
+  },
+  {
+    question: "[J’avoue] ne pas le connaître.",
+    options: ["Je souhaite", "Je regrette", "Je nie", "J’admets"],
+    answer: "J’admets"
+  },
+  {
+    question: "On a reçu [à l’improviste] la visite du secrétaire de mairie.",
+    options: ["très tard", "soudainement", "trop tard", "à l’avance"],
+    answer: "soudainement"
+  },
+  {
+    question: "La fille portait un sac [de toile].",
+    options: ["en cuir", "en papier", "en tissu", "plastique"],
+    answer: "en tissu"
+  },
+  {
+    question: "[Il arrive qu’il soit en retard].",
+    options: ["Il arrive toujours à être à l’heure.", "Parfois, il est en retard", "En arrivant, il avait du retard.", "Il vient avec du retard."],
+    answer: "Parfois, il est en retard"
+  },
+  {
+    question: "Ils [s’engueulent].",
+    options: ["s’envolent", "s’aiment", "s’en vont", "se disputent "],
+    answer: "se disputent "
+  },
+  {
+    question: "J’ai été passionné par les mathématiques [dès] mon plus jeune âge.",
+    options: ["avant", "depuis", "jusqu’à ", "afin de"],
+    answer: "depuis"
+  },
+  {
+    question: "Paul [a le moral à zéro].",
+    options: ["est amoral", "est découragé ", "est encouragé", "est nihiliste"],
+    answer: "est découragé "
+  },
+  {
+    question: "La maison était [immense]. ",
+    options: ["énorme", "minuscule", "vieille", "abandonnée"],
+    answer: "énorme"
+  },
+  {
+    question: "Elle m’a [doublé].",
+    options: ["dépassé", "dessiné", "imité", "copié"],
+    answer: "dépassé"
+  },
+  {
+    question: "C’est [un conseil] à prendre ou à laisser.",
+    options: ["une démarche", "une méthode", "une proposition", "un ordre"],
+    answer: "une proposition"
+  },
+  {
+    question: "[Vous avez tort].",
+    options: ["Vous vous trompez.", "Vous êtes en retard.", "Vous hésitez.", "Vous êtes fous."],
+    answer: "Vous vous trompez."
+  }
+];
+
+    let selectedQuestions = [];
+    let userAnswers = [];
+    let current = 0;
+    let score = 0;
+
+    function shuffle(array) {
+      return array.sort(() => Math.random() - 0.5);
+    }
+
+    function startQuiz() {
+      const num = parseInt(document.getElementById("numQuestions").value);
+      selectedQuestions = shuffle(questions).slice(0, num);
+      userAnswers = [];
+      current = 0;
+      score = 0;
+      document.getElementById("score").textContent = "";
+      document.getElementById("result").textContent = "";
+      document.getElementById("nextBtn").style.display = "inline";
+      showQuestion();
+    }
+
+    function showQuestion() {
+      const q = selectedQuestions[current];
+      const container = document.getElementById("quiz-container");
+      container.innerHTML = `
+        <div class="question">
+          <p><strong>Fråga ${current + 1}:</strong> ${q.question}</p>
+          ${q.options.map(option => `
+            <label>
+              <input type="radio" name="answer" value="${option}"> ${option}
+            </label><br>
+          `).join("")}
+        </div>
+      `;
+      document.getElementById("result").textContent = "";
+    }
+
+    function nextQuestion() {
+      const selected = document.querySelector('input[name="answer"]:checked');
+      if (!selected) {
+        alert("Välj ett alternativ!");
+        return;
+      }
+
+      const answer = selected.value;
+      const correct = selectedQuestions[current].answer;
+      userAnswers.push(answer);
+
+      const result = document.getElementById("result");
+
+      if (answer === correct) {
+        result.textContent = "Rätt!";
+        score++;
+      } else {
+        result.textContent = `Fel. Rätt svar är: ${correct}`;
+      }
+
+      current++;
+
+      if (current < selectedQuestions.length) {
+        setTimeout(showQuestion, 1000);
+      } else {
+        document.getElementById("quiz-container").innerHTML = "<p>Quizet är klart!</p>";
+        document.getElementById("nextBtn").style.display = "none";
+        document.getElementById("score").textContent = `Du fick ${score} av ${selectedQuestions.length} rätt.`;
+
+        showSummary();
+
+        setTimeout(() => {
+          if (confirm("Vill du göra om quizet?")) {
+            startQuiz();
+          }
+        }, 2000);
+      }
+    }
+
+    function showSummary() {
+      let summaryHtml = "<h3>Sammanfattning:</h3><ol>";
+      for (let i = 0; i < selectedQuestions.length; i++) {
+        const q = selectedQuestions[i];
+        const userAnswer = userAnswers[i];
+        const isCorrect = userAnswer === q.answer;
+        summaryHtml += `<li>
+          <strong>${q.question}</strong><br>
+          Ditt svar: <span style="color:${isCorrect ? 'green' : 'red'}">${userAnswer}</span><br>
+          Rätt svar: ${q.answer}
+        </li><br>`;
+      }
+      summaryHtml += "</ol>";
+      document.getElementById("quiz-container").innerHTML += summaryHtml;
+    }
+  </script>
+
+</body>
+</html>
