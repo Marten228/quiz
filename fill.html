@@ -1,0 +1,326 @@
+
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fyll i rätt ord – Quiz</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background-color: #f4f4f9;
+      color: #333;
+      max-width: 800px;
+      margin: auto;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #222;
+    }
+    label, input, button {
+      font-size: 1.1em;
+    }
+    input[type="number"], input[type="text"] {
+      padding: 10px;
+      margin: 10px 0;
+      width: 100%;
+      box-sizing: border-box;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      padding: 12px;
+      font-size: 1.1em;
+      cursor: pointer;
+      border-radius: 8px;
+      margin: 10px 0;
+      width: 100%;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .question-block {
+      background: white;
+      padding: 15px;
+      margin: 15px 0;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    #summary {
+      margin-top: 30px;
+    }
+    .hint {
+      font-style: italic;
+      color: #555;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Fyll i rätt ord</h1>
+  <label for="numQuestions">Hur många frågor vill du ha?</label>
+  <input type="number" id="numQuestions" min="1" max="50" value="2">
+  <button onclick="startQuiz()">Starta quiz</button>
+
+  <div id="quiz-container"></div>
+  <button id="submitBtn" onclick="submitAnswers()" style="display:none;">Skicka in svar</button>
+  <div id="summary"></div>
+
+  <script>
+    const questions = [
+     { question: "Comme elle est (tung), la valise !", answers: ["lourde"] },
+{ question: "Elle a mal au (ryggen) depuis qu’elle est enceinte.", answers: ["dos"] },
+{ question: "Eric a oublié ses livres à la cantine, c'est un être très (tankspridd).", answers: ["distrait"] },
+{ question: "Il (tid/dags) de rentrer.", answers: ["temps"] },
+{ question: "Il est (ovanligt) qu’elle vienne seule.", answers: ["rare"] },
+{ question: "Il l'a dit sans (övertygelse).", answers: ["conviction"] },
+{ question: "Je n'ai pas (lust) de sortir.", answers: ["envie"] },
+{ question: "Je ne veux pas (påstå) que vous ayez tort.", answers: ["prétendre"] },
+{ question: "L'automne est ma (årstid) préférée.", answers: ["saison"] },
+{ question: "Le jeune (erkänner) les faits qui lui sont reprochés.", answers: ["avoue"] },
+{ question: "L'enfant était (redan) réveillé même s'il n'avait dormi que quelques heures.", answers: ["déjà"] },
+{ question: "Les toilettes sont là, à droite dans (korridoren).", answers: ["le couloir"] },
+{ question: "Mais qu'est-ce que tu es (känslig).", answers: ["sensible"] },
+{ question: "Marie a creusé (en brunn).", answers: ["un puits"] },
+{ question: "Mon appartement est situé au premier (våning).", answers: ["étage"] },
+{ question: "Mon mari travaille à (halvtid).", answers: ["mi-temps"] },
+{ question: "Notre bureau se trouve dans un très bel (fastighet).", answers: ["immeuble"] },
+{ question: "Pour sortir, appuyez sur (knappen).", answers: ["le bouton"] },
+{ question: "Quel heureux (slump) que tu sois ici !", answers: ["hasard"] },
+{ question: "Rien n’est (omöjligt) à celui qui ose.", answers: ["impossible"] },
+{ question: "Tous les passagers sont invités à (stiga av).", answers: ["descendre"] },
+{ question: "Tu me (är skyldig) 10 euros.", answers: ["dois"] },
+{ question: "Un pull en acrylique ? Je préfère la (ylle).", answers: ["laine"] },
+{ question: "À force de trop regarder (bildskärmen) on a mal à la tête.", answers: ["l’écran"] },
+{ question: "Fais comme elle te le (råder).", answers: ["conseille"] },
+{ question: "J'ai (hyrt) un appartement dans le Marais.", answers: ["loué"] },
+{ question: "Nous habitons au (bottenvåningen).", answers: ["rez-de-chaussée"] },
+{ question: "Nous sommes sortis (trots) la pluie.", answers: ["malgré"] },
+{ question: "Hugo reste (trogen) à la marque.", answers: ["fidèle"] },
+{ question: "Elle est sortie de la cuisine pour nous (ta emot).", answers: ["accueillir"] },
+{ question: "(Det handlar om) notre avenir.", answers: ["il s'agit de", "il s'agit de"] },
+{ question: "Accroche ce tableau (ovanför) l’autre.", answers: ["au-dessus de"] },
+{ question: "L’homme qui attend sur (bänken) est mon frère.", answers: ["le banc"] },
+{ question: "Elle avait les (fingrar) gelés.", answers: ["doigts"] },
+{ question: "Je trouve ce pain trop (tjockt).", answers: ["épais"] },
+{ question: "Il y a peu d’ (hopp) qu’il réussisse.", answers: ["espoir"] },
+{ question: "Il me faut du (tråd) à coudre noir.", answers: ["fil"] },
+{ question: "Mon fiancé a les cheveux (mörkt).", answers: ["foncés"] },
+{ question: "J’entends quelqu’un (knacka) à la porte.", answers: ["frapper"] },
+{ question: "Monsieur Collin est (allvarligt) malade.", answers: ["gravement"] },
+{ question: "Ses amis l’ont amené à (sjukhuset).", answers: ["l'hôpital"] },
+{ question: "C’est une réaction bien (mänsklig).", answers: ["humaine"] },
+{ question: "Je savais bien qu’il était (onödigt) de refaire cet exercice.", answers: ["inutile"] },
+{ question: "Nos enfants (leker) très bien ensemble.", answers: ["jouent"] },
+{ question: "Mme Hamel avait un (lätt) accent du Midi.", answers: ["léger"] },
+{ question: "Attends, je vais mettre mes (glasögon).", answers: ["lunettes"] },
+{ question: "Tu as raison de te (akta) de la nouvelle technologie.", answers: ["méfier"] },
+{ question: "Ce formulaire s’adresse aux (medlemmar) du club.", answers: ["membres"] },
+{ question: "Mon chien a l’air féroce, mais il ne (bits) pas.", answers: ["mord"] },
+{ question: "Sur (skylten), il était écrit « Ne pas fumer ! »", answers: ["le panneau"] },
+{ question: "Nos (tankar) vont à sa famille en ce moment douloureux.", answers: ["pensées"] },
+{ question: "Où se trouve la (apotek) la plus proche ?", answers: ["pharmacie"] },
+{ question: "Il faut (skydda) ce site.", answers: ["protéger"] },
+{ question: "(Hyran) de cet appartement est très élevé.", answers: ["le loyer", "le loyer"] },
+{ question: "Elle ne voyait rien dans (mörkret).", answers: ["l'obscurité", "le noir"] },
+{ question: "Il est parti, en laissant derrière lui un nuage de (damm).", answers: ["poussière", "poussières"] },
+{ question: "La Première (kriget) mondiale a éclaté en 1914.", answers: ["guerre", "guerre"] },
+{ question: "Paul (tar upp) un briquet de sa poche.", answers: ["sort", "tire"] },
+{ question: "Quelle coïncidence ! J'ai acheté un fauteuil (liknande)!", answers: ["pareil", "semblable"] },
+{ question: "(Hissen) s'arrêta au troisième étage.", answers: ["l'ascenseur", "l'ascenseur", "l'ascenseur"] },
+{ question: "Tu as (helt och hållet) raison.", answers: ["complètement", "tout à fait"] },
+{ question: "Madame, vous conduisez trop (snabbt).", answers: ["vite", "rapidement"] },
+{ question: "(Cykelbanorna) sont bien maintenues.", answers: ["les pistes cyclables", "les pistes cyclables"] },
+{ question: "(Förr eller senare), il faut en payer les conséquences.", answers: ["tôt ou tard", "tôt ou tard"] },
+{ question: "(Mitt i) la pièce, il y avait une table basse.", answers: ["au milieu de", "au milieu de"] },
+{ question: "(Var) avez-vous acheté ce livre ?", answers: ["où", "où"] },
+{ question: "(Varje) chose à sa place.", answers: ["chaque", "chaque"] },
+{ question: "Paul a beaucoup de (bekymmer) en ce moment.", answers: ["soucis", "ennuis"] },
+{ question: "Tout le monde m'a félicitée (förutom) ma sœur.", answers: ["sauf", "excepté"] },
+{ question: "(Däremot), on pourrait se voir demain.", answers: ["par contre", "par contre"] },
+{ question: "(Hovet) française était une des plus brillantes de l'Europe.", answers: ["la cour", "la cour"] },
+{ question: "(Stackars) de toi !", answers: ["pauvre", "pauvre"] },
+{ question: "J’ai un collègue très drôle et on n’arrête pas de (skoja).", answers: ["rigoler", "s’amuser"] },
+{ question: "En semaine, le marché est (öde).", answers: ["désert", "vide"] },
+{ question: "Je ne fume pas (under) le Ramadan.", answers: ["pendant", "durant"] },
+{ question: "(Bron) a été construit au 16ième siècle.", answers: ["le pont", "le pont"] },
+{ question: "Qui est (ägare) de cette voiture mal garée ?", answers: ["le propriétaire", "la propriétaire"] },
+{ question: "Avez-vous l'habitude de préparer un (skinka) à Noël ?", answers: ["jambon"] },
+{ question: "Carla chante (ganska) bien, je trouve.", answers: ["assez"] },
+{ question: "C'est un travail qui demande un (ansträngning) constant.", answers: ["effort"] },
+{ question: "Cette avenue est très (bred).", answers: ["large"] },
+{ question: "Douglas, comme tu es (blek). On dirait un fantôme.", answers: ["pâle"] },
+{ question: "Elles (skäms).", answers: ["ont honte"] },
+{ question: "Frédéric n'est pas là. Il est (försenad).", answers: ["en retard"] },
+{ question: "Il a peur d’aller chez (läkaren).", answers: ["le médecin"] },
+{ question: "Il avait une (röst) rauque.", answers: ["voix"] },
+{ question: "Il débuta par des (översättningar) d’Edgar Poe.", answers: ["traductions"] },
+{ question: "Il est allé de ce (håll)-là.", answers: ["côté"] },
+{ question: "Il fait trop froid pour manger (utomhus).", answers: ["dehors"] },
+{ question: "Il faudra l'(hindra) de faire plus de bêtises !", answers: ["empêcher"] },
+{ question: "Il ne faut pas avoir peur d' (uttrycka) ses sentiments.", answers: ["exprimer"] },
+{ question: "Il y a peu de filles (bland) les étudiants ingénieurs.", answers: ["parmi"] },
+{ question: "J'ai froid. Pourriez-vous me donner une (filt) ?", answers: ["couverture"] },
+{ question: "Je n'arrive pas à la (övertyga) de rester.", answers: ["convaincre"] },
+{ question: "Je suis sûr que cet exercice peut être (användbar).", answers: ["utile"] },
+{ question: "Je t’en (tackar) d’avance.", answers: ["remercie"] },
+{ question: "Je trouve que (stämningen) est bonne ici.", answers: ["l'ambiance"] },
+{ question: "Je vais (beställa) quelques livres.", answers: ["commander"] },
+{ question: "Le soleil m'éblouit. Fermez (gardinerna) !", answers: ["les rideaux"] },
+{ question: "Ne me racontez pas de (lögner) s.v.p. !", answers: ["mensonges"] },
+{ question: "On n'a pas pu (rädda) beaucoup de personnes après le naufrage de l'Estonia.", answers: ["sauver"] },
+{ question: "On peut toujours (hoppas) que l'été sera meilleur l'année prochaine.", answers: ["espérer"] },
+{ question: "Personne ne s’occupe de moi. Je (har tråkigt).", answers: ["m'ennuie"] },
+{ question: "Pierre l’a reconnue dès son (ankomst) à son très beau sourire.", answers: ["arrivée"] },
+{ question: "Pourrais-je emprunter ton (blyertspenna) un instant ?", answers: ["crayon"] },
+{ question: "Pourrais-tu (hälla) un peu de champagne dans mon verre, s'il te plaît ?", answers: ["verser"] },
+{ question: "Que pensez-vous de l'ouverture des (gränserna) à l'intérieur de l'Union Européenne ?", answers: ["frontières"] },
+{ question: "Thierry s’est rongé (naglarna) pendant l’examen.", answers: ["les ongles"] },
+{ question: "Une heure plus tard (kusterna) de France étaient en vue.", answers: ["les côtes"] },
+{ question: "À la Toussaint, on a allumé (ljus) au cimetière.", answers: ["des bougies"] },
+{ question: "Bernard consacre la plupart de ses loisirs à (jakt).", answers: ["la chasse"] },
+{ question: "C’est noté dans (min almanacka).", answers: ["mon agenda"] },
+{ question: "Il faut (lägga till) deux choses à la liste.", answers: ["ajouter"] },
+{ question: "Je déteste les personnes (elaka).", answers: ["méchantes"] },
+{ question: "On voyait un perroquet dans (en bur).", answers: ["une cage"] },
+{ question: "(Eftersom) Paul est en retard, il faut commencer sans lui.", answers: ["puisque", "puisque", "comme", "comme"] },
+{ question: "(Nyligen), on m’a demandé ce que je pensais de ce projet.", answers: ["récemment", "récemment"] },
+{ question: "Ce pull est très (smutsig) .", answers: ["sale"] },
+{ question: "Ma fille ressent une (ångest) à l'idée de parler en public.", answers: ["angoisse"] },
+{ question: "Un (ljud) très fort m’a réveillée.", answers: ["bruit"] },
+{ question: "(Först) il faut activer le compte.", answers: ["d'abord", "d'abord"] },
+{ question: "Avant (avresan), il faut enregistrer les bagages.", answers: ["le départ"] },
+{ question: "C’est une situation (förtvivlad).", answers: ["désespérée"] },
+{ question: "Tu pourrais au moins (försöka).", answers: ["essayer"] },
+{ question: "Je te l’ai (förklarat) au moins cent fois !", answers: ["expliqué"] },
+{ question: "C’est (tack vare) vous que nous sommes là.", answers: ["grâce à"] },
+{ question: "Elle est (tyvärr) en retard.", answers: ["malheureusement"] },
+{ question: "C’est moche de (ljuga).", answers: ["mentir"] },
+{ question: "Tu as oublié le (lösenordet) ?", answers: ["mot de passe"] },
+{ question: "Tareq a mal aux (öronen).", answers: ["oreilles"] },
+{ question: "Je ne le lui permets pas : il a (knappt) quatorze ans.", answers: ["à peine"] },
+{ question: "Cela ne la gêne pas, on dirait (snarare) que cela l’amuse.", answers: ["plutôt"] },
+{ question: "En été, je (föredrar) boire de l’eau fraîche.", answers: ["préfère"] },
+{ question: "La couleur (grön) te va très bien.", answers: ["verte"] },
+{ question: "As-tu peur de (åldras) ?", answers: ["vieillir"] },
+{ question: "Nous répondrons (gärna) à toutes vos questions.", answers: ["volontiers"] },
+{ question: "On a travaillé (tills) Noël pour rendre ce devoir.", answers: ["jusqu'à"] },
+{ question: "Je t’attendrai (ända tills) tu reviennes.", answers: ["jusqu'à ce que"] },
+{ question: "(Det räcker) de faire preuve de volonté pour arrêter de fumer.", answers: ["il suffit", "il suffit"] },
+{ question: "(Mellan) nous, je crois que Jeanne a quitté son mari.", answers: ["entre", "entre"] },
+{ question: "(Vittnet) de l'accident a quitté les lieux.", answers: ["le témoin", "le témoin"] },
+{ question: "Comment faut-il (uppfostra) un enfant unique ?", answers: ["élever", "éduquer"] },
+{ question: "Ne me (rör) pas ! J'ai la peau très sensible.", answers: ["touchez", "touche"] },
+{ question: "Quand avez-vous passé (studentexamen).", answers: ["le bac", "baccalauréat"] },
+{ question: "Je ne peux vous (tvinga) à faire ce test !", answers: ["forcer", "obliger"] },
+{ question: "Je voudrais trouver un endroit (fridfull) pour me reposer.", answers: ["paisible", "calme", "tranquille"] },
+{ question: "(Det är bäst) que tu assistes au congrès.", answers: ["il vaut mieux", "il vaut mieux"] },
+{ question: "Aimez-vous (teckna) ?", answers: ["dessiner"] },
+{ question: "Alors, quelle est votre (åsikt) ?", answers: ["avis"] },
+{ question: "Ces chaussures me (behagar) beaucoup.", answers: ["plaisent"] },
+{ question: "C'est qui cet homme (bakom) votre époux ?", answers: ["derrière"] },
+{ question: "C'est une (sjukdom) chronique.", answers: ["maladie"] },
+{ question: "Cet astéroïde pourrait-il (hota) notre planète ?", answers: ["menacer"] },
+{ question: "Connaissez-vous plusieurs langues (främmande) ?", answers: ["étrangères"] },
+{ question: "Des (tusentals) de personnes ont mangé de la viande avariée.", answers: ["milliers"] },
+{ question: "En hiver, j'ai toujours la peau (torr).", answers: ["sèche"] },
+{ question: "Hier, il (var nära att) tomber dans les escaliers.", answers: ["a failli"] },
+{ question: "Il faut (lösa) ce problème immédiatement.", answers: ["résoudre"] },
+{ question: "Il faut (trycka) sur le bon bouton. Sinon, tout saute.", answers: ["appuyer"] },
+{ question: "Il y a une grande (öppning) dans le mur.", answers: ["ouverture"] },
+{ question: "Je crois qu’elle est (lycklig) avec son mari.", answers: ["heureuse"] },
+{ question: "Je fis quelques (steg) pour essayer mes forces.", answers: ["pas"] },
+{ question: "Je me suis (skurit) le doigt.", answers: ["coupé"] },
+{ question: "Je n' (vågar) pas aller chez le dentiste !", answers: ["ose"] },
+{ question: "Je n'arrivais plus à (röra mig), tellement j'avais mal.", answers: ["bouger"] },
+{ question: "Je ne (ångrar) pas d’avoir fait cette expérience.", answers: ["regrette"] },
+{ question: "Les billets étaient dans une boite en (järn).", answers: ["fer"] },
+{ question: "Mesdames et (mina herrar), nous vous signalons qu'il faut éteindre vos portables pendant le spectacle.", answers: ["messieurs"] },
+{ question: "Ne me (stör) pas, s’il vous plaît !", answers: ["dérangez"] },
+{ question: "Notre professeur est très (våldsam).", answers: ["violent"] },
+{ question: "On voyait un piano dans (ett hörn).", answers: ["un coin"] },
+{ question: "Quel est son (yrke) ?", answers: ["métier"] },
+{ question: "Saviez-vous qu'il y a un (gymnasium) français à Stockholm ?", answers: ["lycée"] },
+{ question: "Voudriez-vous devenir chauffeur de (lastbil) ?", answers: ["camion"] },
+{ question: "Zut ! J'ai encore oublié ma (handduk).", answers: ["serviette"] },
+{ question: "Elle avait été élevée (utomlands).", answers: ["à l'étranger"] },
+{ question: "Elle ne porte jamais (slöjan) à l’école.", answers: ["le voile"] },
+{ question: "Ensuite, laissez (koka) à petit feu pendant dix minutes.", answers: ["bouillir"] },
+{ question: "Il lui (erbjuder) un emploi.", answers: ["offre"] },
+{ question: "Il portait une chemise à (ärmar) courtes.", answers: ["manches"] },
+{ question: "Ils ne te toucheront pas (så länge som) tu seras ici.", answers: ["tant que"] },
+{ question: "Le garçon a fait une (lustig) de tête.", answers: ["drôle"] },
+{ question: "Pourrais-tu me (låna ut) ton portable ?", answers: ["prêter"] },
+{ question: "Je trouve ce qu’elle fait très (imponerande) !", answers: ["impressionnant"] },
+{ question: "Il faut intervenir (innan) il soit trop tard.", answers: ["avant qu'"] },
+{ question: "(Fastän) elle l’ait promis, cela n'a pas été fait.", answers: ["bien qu'"] },
+{ question: "Paul a descendu les vieux meubles à (källaren).", answers: ["la cave"] },
+{ question: "Nous devons (byta) voiture l’année prochaine.", answers: ["changer"] },
+{ question: "Pourquoi est-ce qu’il (viskar) tout le temps ?", answers: ["chuchote"] },
+{ question: "Un architecte connu (har byggt) cette maison.", answers: ["a construit"] },
+{ question: "J’espère ne pas (misslyckas) à l’épreuve.", answers: ["échouer"] },
+{ question: "J’ai (begravt) ma petite souris hier.", answers: ["enterré"] },
+{ question: "Je vais lui (skicka) une carte postale.", answers: ["envoyer"] },
+{ question: "La neige commence à (smälta).", answers: ["fondre"] },
+{ question: "Il était beau, mais mal (klädd).", answers: ["habillé"] },
+{ question: "À la longue, on (vänjer sig vid) ce climat.", answers: ["s'habitue à"] },
+{ question: "Le docteur lui a prescrit des (läkemedel) très forts.", answers: ["médicaments"] },
+{ question: "J’espère qu’il sera capable de tenir sa (löfte).", answers: ["promesse"] },
+{ question: "C’est une voiture (snabb).", answers: ["rapide"] },
+
+    ];
+
+    let selectedQuestions = [];
+    let hintCounters = [];
+
+    function shuffle(array) {
+      return array.sort(() => Math.random() - 0.5);
+    }
+
+    function startQuiz() {
+      const num = parseInt(document.getElementById("numQuestions").value);
+      selectedQuestions = shuffle(questions).slice(0, num);
+      hintCounters = new Array(num).fill(0);
+      document.getElementById("summary").innerHTML = "";
+      document.getElementById("quiz-container").innerHTML = selectedQuestions.map((q, index) => `
+        <div class="question-block">
+          <p><strong>Fråga ${index + 1}:</strong> ${q.question}</p>
+          <input type="text" id="answer-${index}" />
+          <button onclick="showHint(${index})">Visa ledtråd</button>
+          <div id="hint-${index}" class="hint"></div>
+        </div>
+      `).join('');
+      document.getElementById("submitBtn").style.display = "block";
+    }
+
+    function showHint(index) {
+      const answer = selectedQuestions[index].answers[0];
+      if (hintCounters[index] < answer.length) {
+        hintCounters[index]++;
+        document.getElementById(`hint-${index}`).innerText = "Ledtråd: " + answer.substring(0, hintCounters[index]);
+      }
+    }
+
+    function submitAnswers() {
+      let correct = 0;
+      selectedQuestions.forEach((q, index) => {
+        const userAnswer = document.getElementById(`answer-${index}`).value.trim().toLowerCase();
+        const isCorrect = q.answers.includes(userAnswer);
+        if (isCorrect) correct++;
+        document.getElementById(`answer-${index}`).style.borderColor = isCorrect ? "green" : "red";
+      });
+
+      document.getElementById("summary").innerHTML = `
+        <h2>Resultat</h2>
+        <p>Du fick ${correct} av ${selectedQuestions.length} rätt.</p>
+      `;
+    }
+  </script>
+
+</body>
+</html>
