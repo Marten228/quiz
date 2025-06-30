@@ -1,0 +1,1747 @@
+
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <title>Flexibelt Quiz</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      padding: 15px;
+      max-width: 100%;
+      margin: auto;
+      background-color: #f9f9f9;
+      color: #333;
+    }
+
+    h1 {
+      text-align: center;
+      color: #222;
+    }
+
+    label, input, button {
+      font-size: 1.1em; width: 100%; box-sizing: border-box;
+    }
+
+    input[type="number"] {
+      width: 60px;
+      padding: 5px;
+      margin: 5px 10px;
+    }
+
+    button {
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      padding: 12px 20px; width: 100%;
+      margin: 10px 0;
+      font-size: 1.1em; width: 100%; box-sizing: border-box;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .question {
+      margin-bottom: 25px;
+      padding: 15px;
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .question p {
+      font-size: 1.2em;
+      margin-bottom: 10px;
+    }
+
+    label {
+      display: block;
+      margin: 10px 0;
+      background: #e9ecef;
+      padding: 10px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    input[type="radio"] {
+      transform: scale(1.4);
+      margin-right: 10px;
+    }
+
+    #score, #result {
+      font-weight: bold;
+      font-size: 1.2em;
+      margin-top: 20px;
+    }
+
+    #score {
+      color: #333;
+    }
+
+    #result {
+      color: #444;
+    }
+
+    ol {
+      padding-left: 20px;
+    }
+
+    ol li {
+      margin-bottom: 15px;
+    }
+
+    .correct {
+      color: green;
+    }
+
+    .incorrect {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Flexibelt Quiz</h1>
+  <label for="numQuestions">Hur många frågor vill du ha?</label>
+  <input type="number" id="numQuestions" min="1" max="30" value="2">
+  <button onclick="startQuiz()">Starta quiz</button>
+
+  <div id="quiz-container"></div>
+  <button id="nextBtn" onclick="nextQuestion()" style="display:none;">Nästa fråga</button>
+  <p id="result"></p>
+  <p id="score"></p>
+
+  <script>
+// === ALLA FRÅGOR OCH QUIZLOGIK ===
+
+
+
+const questions = [
+  {
+    question: "En arrivant dans cette ville, elle [a demeuré] chez son oncle le temps de trouver un appartement.",
+    options: ["a travaillé chez son oncle", "a habité chez son oncle", "a été en vacances chez son oncle", "a demandé conseil à son oncle"],
+    answer: "a habité chez son oncle"
+  },
+  {
+    question: "La boulangerie [ouvrira désormais] à 7h00 le dimanche.",
+    options: ["n'ouvrira pas", "ouvrira à partir de maintenant", "ouvrira moins souvent", "ouvrira exceptionnellement"],
+    answer: "ouvrira à partir de maintenant"
+  },
+  {
+    question: "Quelles sont [les exigences] requises pour devenir citoyen suédois ?",
+    options: ["les qualités", "les conditions", "les attestations", "les feuilles"],
+    answer: "les conditions"
+  },
+  {
+    question: "Les événements de la vie m'[ont éloigné d]'Isabelle.",
+    options: ["séparé d'", "fait aimer", "fait penser à", "rapproché d'"],
+    answer: "séparé d'"
+  },
+  {
+    question: "[La carte est susceptible de changer] en fonction des saisons.",
+    options: ["La carte doit changer", "La carte peut changer", "La carte ne doit pas changer", "La carte est difficile à changer"],
+    answer: "La carte peut changer"
+  },
+  {
+    question: "[À l'issue du] Conseil de Défense, le ministre des Affaires étrangères, Jean-Marc AYRAULT, a présenté l'évaluation nationale de l'attaque chimique en Syrie.",
+    options: ["À l'occasion de", "À la sortie de", "En même temps que", "Quand il s'agit du"],
+    answer: "À la sortie de"
+  },
+  {
+    question: "Je vous présente [tous mes vœux].",
+    options: ["toutes mes idées", "toutes mes excuses", "tous mes souhaits", "toutes mes condoléances"],
+    answer: "tous mes souhaits"
+  },
+  {
+    question: "Je le [punirai] comme il le mérite.",
+    options: ["le critiquerai", "lui donnerai un prix", "le récompenserai", "lui donnerai une sanction"],
+    answer: "lui donnerai une sanction"
+  },
+  {
+    question: "Comment [se débarrasser des] puces chez les chats ?",
+    options: ["éliminer", "faire pousser", "distinguer", "identifier"],
+    answer: "éliminer"
+  },
+  {
+    question: "Il faut [restreindre] le nombre de places de stationnement dans le centre-ville.",
+    options: ["diminuer", "changer", "augmenter", "améliorer"],
+    answer: "diminuer"
+  },
+  {
+    question: "L'employé [chassa] la mouche d'un coup de plume nerveux.",
+    options: ["fit fuir", "écrasa", "prit", "tapa"],
+    answer: "fit fuir"
+  },
+  {
+    question: "Comment faire pour [effacer] les données de navigation?",
+    options: ["sauver", "supprimer", "rendre accessibles", "mettre en évidence"],
+    answer: "supprimer"
+  },
+  {
+    question: "Comment franchir [cette barrière] ?",
+    options: ["cette maison", "cet obstacle", "ce garage", "cet arbitrage"],
+    answer: "cet obstacle"
+  },
+  {
+    question: "[Cette alimentation] convient à tout le monde.",
+    options: ["Cet établissement", "Ce pull", "Cette nourriture", "Cette lecture"],
+    answer: "Cette nourriture"
+  },
+  {
+    question: "Pour préserver l’environnement, il importe d’agir avec [sagesse] dès aujourd’hui et d’adopter un comportement responsable.",
+    options: ["fierté", "bon sens", "courage", "gentillesse"],
+    answer: "bon sens"
+  },
+  {
+    question: "Elle a senti [la vocation] de s'engager dans une vie religieuse.",
+    options: ["le dégoût", "la question", "le fait", "l'appel"],
+    answer: "l'appel"
+  },
+  {
+    question: "La critique du professeur [a freiné] l’enthousiasme de l’élève.",
+    options: ["a stoppé", "a encouragé", "a augmenté", "a amélioré"],
+    answer: "a stoppé"
+  },
+  {
+    question: "Cet homme est [aveugle] et il a besoin d’une canne blanche pour marcher.",
+    options: ["handicapé", "blessé", "non voyant", "malentendant"],
+    answer: "non voyant"
+  },
+  {
+    question: "C'est [un délit].",
+    options: ["une faute", "quelque chose de très bon", "une blague", "une alternative"],
+    answer: "une faute"
+  },
+  {
+    question: "L’hiver est une saison [propice] aux cambriolages",
+    options: ["l’hiver est une saison de repos pour les cambriolages", "l’hiver est une saison calme pour les cambriolages", "l’hiver est une saison favorable pour les cambriolages", "l’hiver est  une saison froide pour les cambriolages"],
+    answer: "l’hiver est une saison favorable pour les cambriolages"
+  },
+  {
+    question: "Les responsables politiques tentent d'[atténuer] l'effet de l'envol des prix.",
+    options: ["diminuer", "changer", "augmenter", "améliorer"],
+    answer: "diminuer"
+  },
+  {
+    question: "Ce n’est pas bien de [fouiller] le sac à main de quelqu’un d’autre.",
+    options: ["voler", "abîmer", "inspecter", "déplacer"],
+    answer: "inspecter"
+  },
+  {
+    question: "Conservez ce manuel pour un usage [ultérieur].",
+    options: ["intensif", "futur", "éventuel", "très spécifique"],
+    answer: "futur"
+  },
+  {
+    question: "L'homme a été victime d'une mort [subite].",
+    options: ["soudaine", "inexpliquée", "douloureuse", "attendue"],
+    answer: "soudaine"
+  },
+  {
+    question: "Pour sauver ce document, il faut d’abord que tu [insères] la clé USB dans la prise USB de l’ordinateur.",
+    options: ["retires", "fermes", "introduises", "ouvres"],
+    answer: "introduises"
+  },
+  {
+    question: "Le décès de notre [confrère] François Martin nous plonge dans un profond chagrin.",
+    options: ["oncle", "voisin", "collègue", "représentant"],
+    answer: "collègue"
+  },
+  {
+    question: "En règle générale, force est de constater que l’école n’est pas adaptée aux enfants [précoces].",
+    options: ["obèses", "en avance pour leur âge", "handicapés", "hyperactifs"],
+    answer: "en avance pour leur âge"
+  },
+  {
+    question: "Les embouteillages sur l’autoroute A1 ont provoqué [un ralentissement].",
+    options: ["une accélération", "un accident", "une diminution de la vitesse", "un arrêt"],
+    answer: "une diminution de la vitesse"
+  },
+  {
+    question: "Ce n'est pas une question [d'aptitude].",
+    options: ["de rapidité", "de volonté", "de motivation", "de capacité"],
+    answer: "de capacité"
+  },
+  {
+    question: "Un automobiliste a [délibérément] percuté un gendarme qui effectuait des contrôles de vitesse.",
+    options: ["accidentellement", "involontairement ", "volontairement", "sans le savoir"],
+    answer: "volontairement"
+  },
+  {
+    question: "[La trêve] a duré deux jours.",
+    options: ["l'épreuve", "la réunion", "le cessez-le-feu", "la période sans nourriture"],
+    answer: "le cessez-le-feu"
+  },
+  {
+    question: "La qualité [sonore] est excellente.",
+    options: ["La qualité du service", "La qualité du son", "La qualité du soin", "La qualité de l'air"],
+    answer: "La qualité du son"
+  },
+  {
+    question: "[Le premier versement se fait le 19 mai.]",
+    options: ["Le premier chant aura lieu le 19 mai", "La première fête se déroule le 19 mai", "La première baisse d'impôt se fait le 19 mai", "Le premier transfert d'argent se fait le 19 mai"],
+    answer: "Le premier transfert d'argent se fait le 19 mai"
+  },
+  {
+    question: "[Je me suis renseigné sur la disponibilité de cet appartement.]",
+    options: ["J'ai demandé si cet appartement est cher.", "J'ai demandé si cet appartement est grand.", "J'ai demandé si cet appartement est libre.", "J'ai demandé si cet appartement est sale."],
+    answer: "J'ai demandé si cet appartement est libre."
+  },
+  {
+    question: "[Le monsieur s'est montré très borné.]",
+    options: ["Le monsieur a des idées très étroites", "Le monsieur s'habille très mal.", "Le monsieur n'a pas eu de problème à la naissance.", "Le monsieur est très sale."],
+    answer: "Le monsieur a des idées très étroites"
+  },
+  {
+    question: "Un homme de 46 ans a été [inculpé] dans cette affaire.",
+    options: ["mis en prison", "accusé", "arrêté", "condamné"],
+    answer: "accusé"
+  },
+  {
+    question: "[Le bétail est transporté] jusqu'au marché de Grandcamp-Maisy.",
+    options: ["Les meubles sont transportés", "Les bêtes sont transportées", "Les pommes de terre sont transportées", "La récolte est transportée"],
+    answer: "Les bêtes sont transportées"
+  },
+  {
+    question: "Il a tenté de changer [son affectation], mais rien n'y fait.",
+    options: ["son placement", "son salaire", "son passeport", "sa voiture"],
+    answer: "son placement"
+  },
+  {
+    question: "La conférence [a abouti à] un accord historique.",
+    options: ["a eu pour thème", "a commencé par", "a abordé", "a eu pour résultat"],
+    answer: "a eu pour résultat"
+  },
+  {
+    question: "Nous [avons franchi] une étape importante.",
+    options: ["avons passé", "avons créé", "avons arrêté", "avons condamné"],
+    answer: "avons passé"
+  },
+  {
+    question: "[La dette] de la Grèce est importante.",
+    options: ["la solidarité", "la richesse", "l'emprunt", "la détresse"],
+    answer: "l'emprunt"
+  },
+  {
+    question: "Ils ont été [acheminés] à Lyon.",
+    options: ["transportés", "vendus", "achetés", "produits"],
+    answer: "transportés"
+  },
+  {
+    question: "[L'envergure] de cet événement est un défi.",
+    options: ["L'organisation", "La taille", "Le coût", "Le financement"],
+    answer: "La taille"
+  },
+  {
+    question: "On leur a proposé [une indemnisation].",
+    options: ["une explication", "une prolongation", "une modernisation", "une compensation"],
+    answer: "une compensation"
+  },
+  {
+    question: "Le travail artistique leur permet de [s'épanouir].",
+    options: ["s'endormir", "s'entendre", "se réaliser", "se parler"],
+    answer: "se réaliser"
+  },
+  {
+    question: "Le montant maximum de [l'allégement] dépend de l'effectif de l'entreprise.",
+    options: ["la diminution", "la contribution", "la somme", "la bourse"],
+    answer: "la diminution"
+  },
+  {
+    question: "C'est dans l'ouest que [la pénurie] du beurre est la plus forte.",
+    options: ["la production", "la surproduction", "le manque", "la demande"],
+    answer: "le manque"
+  },
+  {
+    question: "Les séparatistes [se sont emparés] de la capitale.",
+    options: ["ont parlé de", "ont célébré", "ont pris", "ont baptisé"],
+    answer: "ont pris"
+  },
+  {
+    question: " Dans l'immeuble en face, il y avait un laboratoire [clandestin].",
+    options: ["moderne", "secret", "abandonné", "connu"],
+    answer: "secret"
+  },
+  {
+    question: "[L'échéance] du contrat est le 6 mai.",
+    options: ["Le début", "La fin", "Le délai", "La signature"],
+    answer: "La fin"
+  },
+  {
+    question: "Ce sera peut-être l'occasion de [brandir] le deuxième trophée.",
+    options: ["remettre", "exposer", "gagner", "brûler"],
+    answer: "exposer"
+  },
+  {
+    question: "Ce sens est [attesté] depuis 1833.",
+    options: ["pris", "synonyme", "différent", "confirmé"],
+    answer: "confirmé"
+  },
+  {
+    question: "C'est [le fardeau] de la dette.",
+    options: ["la menace", "le poids", "l'explosion", "le montant"],
+    answer: "le poids"
+  },
+  {
+    question: "La foule était au bord de [l'émeute].",
+    options: ["la zone interdite", "la limite", "l'extase", "la révolte"],
+    answer: "la révolte"
+  },
+  {
+    question: "C'est [un serment] inattendu.",
+    options: ["une blessure", "une promesse", "un virement", "un changement"],
+    answer: "une promesse"
+  },
+  {
+    question: "Comment [perpétuer] ce savoir ?",
+    options: ["célébrer", "juger", "documenter", "faire durer"],
+    answer: "faire durer"
+  },
+  {
+    question: "[L’entrevue] a eu lieu ce matin.",
+    options: ["la pause", "le tournage", "l’opération", "la rencontre"],
+    answer: "la rencontre"
+  },
+  {
+    question: "C’est une femme très [aisée].",
+    options: ["agréable", "riche", "serviable", "bavarde"],
+    answer: "riche"
+  },
+  {
+    question: "Ce ruban n’[adhère] pas au verre.",
+    options: ["colle", "marque", "casse", "s’enlève"],
+    answer: "colle"
+  },
+  {
+    question: "Cet apparil [suscite] beaucoup de curiosité.",
+    options: ["donne", "engendre", "démontre", "traîne"],
+    answer: "engendre"
+  },
+  {
+    question: "Il [tâche de] former un gouvernement.",
+    options: ["est responsable de", "fait semblant de", "doit", "essaye de"],
+    answer: "essaye de"
+  },
+  {
+    question: "L’eau qu’il a [puisée] est trouble.",
+    options: ["vendue", "prise", "versée", "goûtée"],
+    answer: "prise"
+  },
+  {
+    question: "Les hommes [débarquèrent] en silence.",
+    options: ["descendirent", "montèrent", "coururent", "mangèrent"],
+    answer: "descendirent"
+  },
+  {
+    question: "Marc [a dévoilé] les coulisses de son clip.",
+    options: ["a tourné", "a révélé", "a pris", "a soutenu"],
+    answer: "a révélé"
+  },
+  {
+    question: "Nils [a gâché] la fête.",
+    options: ["a saboté", "a arrangé", "a payé", "a assisté à"],
+    answer: "a saboté"
+  },
+  {
+    question: "Tu penses que tu vas y [parvenir] ?",
+    options: ["aller", "réussir", "passer", "retourner"],
+    answer: "réussir"
+  },
+  {
+    question: "Je [prône] la stabilité.",
+    options: ["prévois", "recommande", "décrit", "teste"],
+    answer: "recommande"
+  },
+  {
+    question: "L’homme à la barbe grise m’[a harcelée] pendant deux heures.",
+    options: ["parlé", "embêtée", "consolée", "vue"],
+    answer: "embêtée"
+  },
+  {
+    question: "Votre conclusion est [erronée].",
+    options: ["spéciale", "surprenante", "fausse", "significative"],
+    answer: "fausse"
+  },
+  {
+    question: "C’est un morceau [inédit].",
+    options: ["sans paroles", "interdit", "nouveau", "humoristique"],
+    answer: "nouveau"
+  },
+  {
+    question: "C’est effectivement un fait [troublant].",
+    options: ["impressionnant", "nouveau", "inquiétant", "sans importance"],
+    answer: "inquiétant"
+  },
+  {
+    question: "Il continue sans [se lasser].",
+    options: ["se renouveler", "s’amuser", "se plaindre", "se fatiguer"],
+    answer: "se fatiguer"
+  },
+  {
+    question: "[Cet édifice] est typique du 19ième siècle.",
+    options: ["Ce livre", "Cette statue", "Ce bâtiment", "Cette mine"],
+    answer: "Ce bâtiment"
+  },
+  {
+    question: "[Son aveu] public porte un coup terrible à la parole publique.",
+    options: ["Son affirmation", "Sa déclaration", "Sa réponse", "Sa confession"],
+    answer: "Sa confession"
+  },
+  {
+    question: "Ce produit est [néfaste].",
+    options: ["inutile", "utile", "bon", "mauvais"],
+    answer: "mauvais"
+  },
+  {
+    question: "Est-ce qu'il a parlé [des débouchés].",
+    options: ["de l'ouverture des bouchons", "des possibilités de travail", "des bouteilles", "des inégalités"],
+    answer: "des possibilités de travail"
+  },
+  {
+    question: "Gilets jaunes: tentatives pour [amorcer] le dialogue.",
+    options: ["commencer", "arrêter", "améliorer", "rendre difficile"],
+    answer: "commencer"
+  },
+  {
+    question: "Il y aura cinq minutes de temps [additionnel].",
+    options: ["conventionnel", "prévisionnel", "supplémentaire", "prioritaire"],
+    answer: "supplémentaire"
+  },
+  {
+    question: "Un groupe [autochtone] poursuit la Colombie-Britannique pour absence de consultation.",
+    options: ["d'experts", "indigène", "de victimes", "méconnu"],
+    answer: "indigène"
+  },
+  {
+    question: "Nous aurons [l'appui] de Monsieur le maire.",
+    options: ["la visite", "l'argent", "le soutien", "l'inspection"],
+    answer: "le soutien"
+  },
+  {
+    question: "C'est [un défi].",
+    options: ["une séance", "un faux billet", "une attaque", "un challenge"],
+    answer: "un challenge"
+  },
+  {
+    question: "[Les effectifs] sont au complet.]",
+    options: ["Tout le personnel est là.", "Toute la puissance est utilisée.", "La centrale tourne à plein régime", "L'efficacité est au maximum."],
+    answer: "Tout le personnel est là."
+  },
+  {
+    question: "Quelles sont leurs [revendications] ?",
+    options: ["demandes", "principes", "règles", "problèmes"],
+    answer: "demandes"
+  },
+  {
+    question: "Les ventes ont connu [un recul] de 10 %.",
+    options: ["un déclin", "une hausse", "un bond", "un taux"],
+    answer: "un déclin"
+  },
+  {
+    question: "La grogne fiscale du Jura [débouche sur] un référendum.",
+    options: ["donne sur", "mène à", "veut", "résulte d'"],
+    answer: "mène à"
+  },
+  {
+    question: "Cet homme est [rigoureux].",
+    options: ["doué", "strict", "paresseux", "sympathique"],
+    answer: "strict"
+  },
+  {
+    question: "Vous pouvez demander à Françoise de [tailler] cette plante ?",
+    options: ["nettoyer", "arroser", "couper", "déplacer"],
+    answer: "couper"
+  },
+  {
+    question: "L'affaire Briand [a ébranlé] la Belgique. ",
+    options: ["a fait parler", "a réjoui", "a secoué", "a divisé"],
+    answer: "a secoué"
+  },
+  {
+    question: "Il ne faut pas [le blâmer].",
+    options: ["le critiquer", "l'excuser", "le caresser", "l'aider"],
+    answer: "le critiquer"
+  },
+  {
+    question: "Noëlla passe ses journées à [guetter] les poissons.",
+    options: ["observer", "garder", "pêcher", "nourrir"],
+    answer: "observer"
+  },
+  {
+    question: "Il est [appliqué] dans son travail.",
+    options: ["paresseux", "heureux", "ambitieux", "en retard"],
+    answer: "ambitieux"
+  },
+  {
+    question: "Cette femme [me sollicite] tout le temps.",
+    options: ["me fait la cour", "me demande", "m'agresse", "m'en veux"],
+    answer: "me demande"
+  },
+  {
+    question: "Ce fléau [sévit en France] depuis mars.",
+    options: ["est en visite en France", "existe en France", "frappe la France", "sert la France"],
+    answer: "frappe la France"
+  },
+  {
+    question: "On apercevait [la crête] au loin.",
+    options: ["le sommet", "la forêt", "l'entrée", "la maison"],
+    answer: "le sommet"
+  },
+  {
+    question: "Cette personne [soulage] mes maux.",
+    options: ["apaise", "paie", "s'intéresse à", "décrit"],
+    answer: "apaise"
+  },
+  {
+    question: "Le titre de ce livre est: Dans [le sillage] de M. Chabin.",
+    options: ["la tête", "les traces", "l'esprit", "le domaine"],
+    answer: "les traces"
+  },
+  {
+    question: "Je [préconise] ce journal.",
+    options: ["adore", "déteste", "recommande", "déconseille"],
+    answer: "recommande"
+  },
+  {
+    question: "Cela peut [apaiser] la douleur.",
+    options: ["enlever", "calmer", "aggraver", "multiplier"],
+    answer: "calmer"
+  },
+  {
+    question: "Je vais [m'abstenir].",
+    options: ["parler", "voter", "venir", "renoncer"],
+    answer: "renoncer"
+  },
+  {
+    question: "Elle se trouve dans une situation [précaire].",
+    options: ["favorable", "préoccupante", "intéressante", "spéciale"],
+    answer: "préoccupante"
+  },
+  {
+    question: "Elle [a ôté] le pull.",
+    options: ["lavé", "enlevé", "mis", "pris"],
+    answer: "enlevé"
+  },
+  {
+    question: "[Son aveu] était attendu.",
+    options: ["Son discours", "Sa célébration", "Sa prière", "Sa confession"],
+    answer: "Sa confession"
+  },
+  {
+    question: "Le bracelet a été fabriqué de façon [indigène].",
+    options: ["novatrice", "étrangère", "révolutionnaire", "locale"],
+    answer: "locale"
+  },
+  {
+    question: "Les soldats ont fait [une brèche] dans les remparts.",
+    options: ["une ouverture", "un accord", "une parade", "une réparation"],
+    answer: "une ouverture"
+  },
+  {
+    question: "« Quoi ? J’ai fait [une connerie] ? J’savais pas. »",
+    options: ["une surprise", "une bêtise", "une erreur extrêmement grave", "une spécialisation"],
+    answer: "une bêtise"
+  },
+  {
+    question: "[Le scrutin] s'est déroulé dans le calme.",
+    options: ["le vote", "le repas", "la fête", "la messe"],
+    answer: "le vote"
+  },
+  {
+    question: "[Sa franchise] m’a beaucoup étonnée.",
+    options: ["Son honnêteté", "Sa mauvaise humeur", "Sa gravité", "Son entreprise"],
+    answer: "Son honnêteté"
+  },
+  {
+    question: "Allons enfants de la Patrie, Le jour de gloire est arrivé ! Contre nous de la tyrannie, L'étendard sanglant est levé, (bis) Entendez-vous dans les campagnes Mugir ces [féroces] soldats ? Ils viennent jusque dans nos bras Égorger nos fils, nos compagnes ! (Marseljäsen, första versen)",
+    options: ["forts", "méchants", "cruels", "étrangers"],
+    answer: "cruels"
+  },
+  {
+    question: "Les besoins humanitaires sur les lieux du crash sont [minimes].",
+    options: ["connus", "importants", "urgents", "négligeables"],
+    answer: "négligeables"
+  },
+  {
+    question: "Quels sont les différents types de [rayonnement] ?",
+    options: ["zones", "culture", "radiation", "savoir"],
+    answer: "radiation"
+  },
+  {
+    question: "Sept personnes ont été mises en examen dans une affaire de trafic de [stupéfiants].",
+    options: ["viande", "voitures", "faux billets", "drogues"],
+    answer: "drogues"
+  },
+  {
+    question: "Je n'arrive pas à [nouer] ce foulard.",
+    options: ["attacher", "enlever", "laver", "me séparer de"],
+    answer: "attacher"
+  },
+  {
+    question: "Les nuages [se dissipent] dans le ciel breton ce matin.",
+    options: ["se dispersent", "se multiplient", "se forment", "se noircissent"],
+    answer: "se dispersent"
+  },
+  {
+    question: "Cet homme  a beaucoup [persisté]. ",
+    options: ["menti", "insisté", "soupiré", "avoué"],
+    answer: "insisté"
+  },
+  {
+    question: "Il y a eu un [accroissement] récemment.",
+    options: ["un manque", "une réunion", "un colloque", "une augmentation"],
+    answer: "une augmentation"
+  },
+  {
+    question: "Le tourisme [spatial] est devenu une vraie industrie.",
+    options: ["vert", "fluvial", "hors de l'atmosphère", "de masse"],
+    answer: "hors de l'atmosphère"
+  },
+  {
+    question: "[Le fondateur] a ouvert la séance.",
+    options: ["Rektorn", "Domaren", "Ordföranden", "Grundaren"],
+    answer: "Grundaren"
+  },
+  {
+    question: "Vous connaissez [le déroulement].",
+    options: ["le milieu", "la procédure", "le contexte", "les règles"],
+    answer: "la procédure"
+  },
+  {
+    question: "La femme a finalement été [piégée].",
+    options: ["sollicitée", "célébrée", "attrapée", "élue"],
+    answer: "attrapée"
+  },
+  {
+    question: "L'élaboration des [fiches] est en cours.",
+    options: ["formulaires", "projets", "mythes", "budgets"],
+    answer: "formulaires"
+  },
+  {
+    question: "Des [bouleversements] sociaux sont à prévoir.",
+    options: ["changements", "problèmes", "contacts", "coûts"],
+    answer: "changements"
+  },
+  {
+    question: "Des mesures [préventives] ont été adoptées durant les dernières semaines.",
+    options: ["de précaution", "fortes", "extraordinaires", "rapides"],
+    answer: "de précaution"
+  },
+  {
+    question: "Cette formation vous sera [bénéfique]. ",
+    options: ["inutile", "utile", "inintéressante", "bonne"],
+    answer: "utile"
+  },
+  {
+    question: "Tu vois [le rocher] là-bas ?",
+    options: ["le bâtiment", "la terrasse", "le mur", "la pierre"],
+    answer: "la pierre"
+  },
+  {
+    question: "Notre pays a besoin de [sérénité].",
+    options: ["de calme", "de contrôle", "d'indépendance", "de sécurité"],
+    answer: "de calme"
+  },
+  {
+    question: "Le quai était [vide] pendant quelques minutes. ",
+    options: ["désert", "accessible", "épuisé", "préoccupé"],
+    answer: "désert"
+  },
+  {
+    question: "D’où viennent ces pensées [sombres] ?",
+    options: ["interdites", "noires", "bizarres", "optimistes"],
+    answer: "noires"
+  },
+  {
+    question: "Il ne faut pas [confondre] ces deux termes.",
+    options: ["distinguer", "mélanger", "comparer", "mijoter"],
+    answer: "mélanger"
+  },
+  {
+    question: "[Elle n’a pas de goût]. ",
+    options: ["Elle n’a pas de courage.", "Elle n’a pas de bon sens.", "Elle n’a pas de classe.", "Elle n’a pas de soucis."],
+    answer: "Elle n’a pas de classe."
+  },
+  {
+    question: "Cette veste [n’est pas à ma taille].",
+    options: ["n’a pas une bonne coupe", "n’a pas mes dimensions", "n’est pas de mon âge", "n’est pas à mon goût"],
+    answer: "n’a pas mes dimensions"
+  },
+  {
+    question: "Ils ont fait une excellente [communication].",
+    options: ["consultation", "interprétation", "présentation", "proposition"],
+    answer: "présentation"
+  },
+  {
+    question: "[Le lendemain], nous sommes allés nous baigner.",
+    options: ["le jour suivant", "demain", "hier", "dans l’après-midi"],
+    answer: "le jour suivant"
+  },
+  {
+    question: "[Elle m'a trompé].",
+    options: ["Elle a fait une erreur.", "Elle a été infidèle.", "Elle a du succès.", "Elle a sifflé."],
+    answer: "Elle a été infidèle."
+  },
+  {
+    question: "Sophie [a senti une douleur à] sa jambe droite.",
+    options: ["a eu une sensation de chaleur à", "a eu une piqure à", "a eu mal à", "a senti un poids à"],
+    answer: "a eu mal à"
+  },
+  {
+    question: "Mais il l'a lu avec un [léger] accent flamand d'Anvers.",
+    options: ["petit", "fort", "grand", "élégant"],
+    answer: "petit"
+  },
+  {
+    question: "Quelqu'un [veillait sur moi].",
+    options: ["me regardait en secret", "me voulait du mal", "me faisait vieillir", "me surveillait"],
+    answer: "me surveillait"
+  },
+  {
+    question: "Et [aussitôt], un sourire ironique a éclairé son visage.",
+    options: ["immédiatement", "quelque temps après", "de la même façon", "tout d'un coup"],
+    answer: "immédiatement"
+  },
+  {
+    question: "La fenêtre donnait sur une rue [étroite].",
+    options: ["grande", "peu large", "vide", "courte"],
+    answer: "peu large"
+  },
+  {
+    question: "Comment peux tu être si [gauche] ?",
+    options: ["bête", "maladroit", "nul", "mal élevé"],
+    answer: "maladroit"
+  },
+  {
+    question: "Pendant le tremblement de terre on a été cloué [au sol]. ",
+    options: ["ensemble", "par terre", "au mur", "à la maison"],
+    answer: "par terre"
+  },
+  {
+    question: "Michèle est une personne très [souple].",
+    options: ["sympathique", "flexible", "agréable", "compétente"],
+    answer: "flexible"
+  },
+  {
+    question: "[Je me méfie de lui.] ",
+    options: ["Je n’ai pas confiance en lui.", "Je ne m’intéresse pas à lui.", "Je suis amoureux de lui.", "Je lui en veux."],
+    answer: "Je n’ai pas confiance en lui."
+  },
+  {
+    question: "Tu devrais [te renseigner].",
+    options: ["changer d’avis", "te laisser convaincre ", "t’informer", "te soigner"],
+    answer: "t’informer"
+  },
+  {
+    question: "[J’avoue] ne pas le connaître.",
+    options: ["Je souhaite", "Je regrette", "Je nie", "J’admets"],
+    answer: "J’admets"
+  },
+  {
+    question: "La fille portait un sac [de toile].",
+    options: ["en cuir", "en papier", "en tissu", "plastique"],
+    answer: "en tissu"
+  },
+  {
+    question: "Ils [s’engueulent].",
+    options: ["s’envolent", "s’aiment", "s’en vont", "se disputent "],
+    answer: "se disputent "
+  },
+  {
+    question: "Paul [a le moral à zéro].",
+    options: ["est amoral", "est découragé ", "est encouragé", "est nihiliste"],
+    answer: "est découragé "
+  },
+  {
+    question: "La maison était [immense]. ",
+    options: ["énorme", "minuscule", "vieille", "abandonnée"],
+    answer: "énorme"
+  },
+  {
+    question: "Elle m’a [doublé].",
+    options: ["dépassé", "dessiné", "imité", "copié"],
+    answer: "dépassé"
+  },
+  {
+    question: "C’est [un conseil] à prendre ou à laisser.",
+    options: ["une démarche", "une méthode", "une proposition", "un ordre"],
+    answer: "une proposition"
+  },
+  {
+    question: "[Vous avez tort].",
+    options: ["Vous vous trompez.", "Vous êtes en retard.", "Vous hésitez.", "Vous êtes fous."],
+    answer: "Vous vous trompez."
+  },
+  {
+    question: "C’est [quelconque].",
+    options: ["n’importe quoi", "important", "ordinaire", "extraordinaire"],
+    answer: "n’importe quoi"
+  },
+  {
+    question: "On a eu une idée [lumineuse].",
+    options: ["importante", "brillante", "interdite", "intéressante"],
+    answer: "brillante"
+  },
+  {
+    question: "Votre [dossier] a disparu.",
+    options: ["dos", "siège", "document", "agenda"],
+    answer: "dos"
+  },
+  {
+    question: "Elle te plaît, [cette émission] ?",
+    options: ["cette chanson", "ce programme", "ce film", "cette interprétation"],
+    answer: "ce programme"
+  },
+  {
+    question: "[Il paraît que Mme Cresson est malade].",
+    options: ["Mme Cresson me semble malade.", "On m’a dit que Mme Cresson était malade.", "Mme Cresson n’est plus malade.", "Mme Cresson a l’air malade."],
+    answer: "On m’a dit que Mme Cresson était malade."
+  },
+  {
+    question: "je regrettais de lui avoir fait une [fausse] promesse",
+    options: ["directe", "méchante", "qui n'est pas rigide", "qui n'est pas vrai"],
+    answer: "qui n'est pas vrai"
+  },
+  {
+    question: "Cette photo est très [floue].",
+    options: ["n’est pas bien", "est fort creuse", "est tout à fait chouette", "n’est pas claire du tout"],
+    answer: "n’est pas claire du tout"
+  },
+  {
+    question: "Nous avons tous des souvenirs qui [remontent] à notre enfance.",
+    options: ["ont leur origine à", "ont affaire à", "ressemblent à", "ont droit à"],
+    answer: "ont leur origine à"
+  },
+  {
+    question: "Deux [poids lourds] ont été impliqués dans un accident.",
+    options: ["avions", "bus", "camions", "navires"],
+    answer: "camions"
+  },
+  {
+    question: "Antoine est responsable [de son malheur].",
+    options: ["de sa situation", "de son mauvais emploi du temps", "de sa décision", "de sa misère"],
+    answer: "de sa misère"
+  },
+  {
+    question: "[Apparemment], elle ne viendra pas.",
+    options: ["en outre", "d’ailleurs ", "autrement", "vraisemblablement"],
+    answer: "vraisemblablement"
+  },
+  {
+    question: "Tous les jours, [le quotidien] me rend quelque chose d’utile.",
+    options: ["le journal", "la technique", "l’entraînement", "le facteur"],
+    answer: "le journal"
+  },
+  {
+    question: "Tu as [des soucis] ?",
+    options: ["des crayons", "des problèmes", "des allumettes", "des aspirines"],
+    answer: "des problèmes"
+  },
+  {
+    question: "Il paraît qu’il [loge] avec une copine maintenant.",
+    options: ["dort", "se dispute", "joue", "habite"],
+    answer: "habite"
+  },
+  {
+    question: "[J’ai peur qu’il ne vienne].",
+    options: ["Je n’ai pas peur qu’il vienne", "Je redoute sa venue", "Je crains qu’il ne vienne pas", "Le fait qu’il vienne ne me fait pas peur"],
+    answer: "Je redoute sa venue"
+  },
+  {
+    question: "Ce n'était pas comme ça  [auparavant].",
+    options: ["ailleurs", "autrefois", "alors", "toujours"],
+    answer: "autrefois"
+  },
+  {
+    question: "Mon frère m’a fait [une remarque].",
+    options: ["un commentaire", "une proposition", "un compliment", "un signe"],
+    answer: "un commentaire"
+  },
+  {
+    question: "Les mauvaises herbes [envahissent] le jardin.",
+    options: ["détruisent", "encadrent", "remplissent", "cachent"],
+    answer: "remplissent"
+  },
+  {
+    question: "Elle est [mal à l’aise].",
+    options: ["malade", "gênée", "pauvre", "fatiguée"],
+    answer: "gênée"
+  },
+  {
+    question: "Elle est très belle cette photo. [En revanche], je n’aime pas trop le cadre.",
+    options: ["contrairement", "par contre", "à la différence", "malheureusement"],
+    answer: "par contre"
+  },
+  {
+    question: "Il faut [saisir] l’occasion !",
+    options: ["prendre", "comprendre", "reconnaître", "éviter"],
+    answer: "prendre"
+  },
+  {
+    question: "Les chaussures à talons hauts sont très [tendance].",
+    options: ["serrées", "à la mode", "typiques", "à propos"],
+    answer: "à la mode"
+  },
+  {
+    question: "Le patron est en [colère].",
+    options: ["fâché", "frustré", "fatigué", "inquiété"],
+    answer: "fâché"
+  },
+  {
+    question: "[J’ai failli le faire.]",
+    options: ["Je l’ai presque fait.", "Je n’ai pas réussi à le faire.", "Il a fallu que je le fasse.", "J’ai fait semblant de le faire."],
+    answer: "Je l’ai presque fait."
+  },
+  {
+    question: "Ce fut [un échec]. ",
+    options: ["un malentendu ", "un jeu", "une erreur", "une défaite"],
+    answer: "une défaite"
+  },
+  {
+    question: "Elle [envisage] de participer.",
+    options: ["craint", "refuse", "est capable", "projette"],
+    answer: "projette"
+  },
+  {
+    question: "[Je n’arrivais pas à la joindre.]",
+    options: ["Je suis venu trop tard pour pouvoir la rejoindre.", "J'étais incapable d'éprouver de la joie.", "Elle ne répondait pas au téléphone.", "Elle ne voulait pas que je l'aide."],
+    answer: "Elle ne répondait pas au téléphone."
+  },
+  {
+    question: "[Elle t’envie.]",
+    options: ["Elle t’en veut.", "Elle a envie de toi.", "Elle s’inquiète de toi.", "Elle aimerait être à ta place."],
+    answer: "Elle aimerait être à ta place."
+  },
+  {
+    question: "Il [mêle] tout.",
+    options: ["comprend", "peigne", "mélange", "avoue"],
+    answer: "mélange"
+  },
+  {
+    question: "Philippe [a arraché] la plante.",
+    options: ["a transporté", "a fixé", "a enlevé", "a arrosé"],
+    answer: "a enlevé"
+  },
+  {
+    question: "Mon voisin [prend soin de] son chien.",
+    options: ["aime bien", "s’occupe de", "sort", "appelle"],
+    answer: "s’occupe de"
+  },
+  {
+    question: "[Il n’est guère malade].",
+    options: ["Il est très peu malade.", "Il n’est pas malade du tout.", "Il n’est pas que malade.", "Il est assez malade."],
+    answer: "Il est très peu malade."
+  },
+  {
+    question: "Sophie [craint] l’arrivée des manifestants.",
+    options: ["surveille", "encadre", "a peur de", "attend avec impatience"],
+    answer: "a peur de"
+  },
+  {
+    question: "Pierre [affirme] que Janine est en train de perdre le combat.",
+    options: ["ne pense pas", "assure", "croit", "suppose"],
+    answer: "assure"
+  },
+  {
+    question: "Elle [s’est plantée à] son examen.",
+    options: ["a passé", "a échoué à ", "a réussi", "s’est inscrite à"],
+    answer: "a échoué à "
+  },
+  {
+    question: "Elle [rédige] d’abord un brouillon.",
+    options: ["pense", "écrit", "bavarde ", "chante"],
+    answer: "écrit"
+  },
+  {
+    question: "Maintenant, il faut [lutter].",
+    options: ["faire des efforts", "faire des études", "faire des affaires", "faire des courses"],
+    answer: "faire des efforts"
+  },
+  {
+    question: "Il [se fait souvent remarquer].",
+    options: ["se fait contredire", "se fait distinguer", "fait des remarques", "fait l’imbécile"],
+    answer: "se fait distinguer"
+  },
+  {
+    question: "[Il s’avère qu]’il souffre d’une maladie du cœur.",
+    options: ["Il est probable qu’", "Il est possible qu’", "Il se révèle qu’", "Peut-être qu’"],
+    answer: "Il se révèle qu’"
+  },
+  {
+    question: "Ce n’est pas le moment de [rigoler] !",
+    options: ["pleurer", "danser", "refuser", "rire"],
+    answer: "rire"
+  },
+  {
+    question: "J’ai [entamé] ce livre par curiosité.",
+    options: ["ouvert", "feuilleté", "commencé", "trouvé"],
+    answer: "commencé"
+  },
+  {
+    question: "Quelle [affreuse] nouvelle !",
+    options: ["importante", "horrible", "agréable", "énorme"],
+    answer: "horrible"
+  },
+  {
+    question: "Aimez-vous la chanson [Nul ne] se guérit de son enfance ?",
+    options: ["rien ne", "aucun ne", "personne ne", "jamais ne"],
+    answer: "personne ne"
+  },
+  {
+    question: "Merci pour ce repas ! C’était [fameux] !",
+    options: ["célèbre", "très bon", "beaucoup", "très riche"],
+    answer: "très bon"
+  },
+  {
+    question: "J’adore [ce gamin] !",
+    options: ["ce gâteau", "cette fête", "cette blague", "ce garçon"],
+    answer: "ce garçon"
+  },
+  {
+    question: "Ma cousine a enfin [admis] ses faiblesses.",
+    options: ["compris", "changé", "reconnu", "retrouvé"],
+    answer: "reconnu"
+  },
+  {
+    question: "Il faut [préserver] notre patrimoine culturel.",
+    options: ["conserver", "contrarier", "consommer", "contaminer"],
+    answer: "conserver"
+  },
+  {
+    question: "Il nous faudrait [une corde]. ",
+    options: ["un contrat", "un panier", "un conseil", "un lien"],
+    answer: "un lien"
+  },
+  {
+    question: "Tout petit, j’ai vu [un flic] entrer chez mon copain.",
+    options: ["un type", "un veuf", "un policier", "un chien"],
+    answer: "un policier"
+  },
+  {
+    question: "Les juges [exigent] des réponses exactes.",
+    options: ["demandent ", "préfèrent", "proposent", "offrent"],
+    answer: "demandent "
+  },
+  {
+    question: "On est allé chercher les billets [à l'accueil].",
+    options: ["à la banque", "à la réception", "au magasin", "à la gare"],
+    answer: "à la réception"
+  },
+  {
+    question: "Le prix varie [en fonction de] leurs revenus.",
+    options: ["par rapport à", "malgré", "grâce à", "au niveau de"],
+    answer: "par rapport à"
+  },
+  {
+    question: "C’est [épouvantable]. ",
+    options: ["probable", "excellent", "essentiel", "affreux"],
+    answer: "affreux"
+  },
+  {
+    question: "Mon oncle [s’est fait virer].",
+    options: ["a été licencié", "a attrapé un virus", "est devenu célibataire", "s’est fait cambrioler"],
+    answer: "a été licencié"
+  },
+  {
+    question: "Tout le monde participe aux tâches [domestiques].",
+    options: ["faciles", "difficiles", "de la maison", "du bureau"],
+    answer: "de la maison"
+  },
+  {
+    question: "Le comité a rendu un hommage [unanime] aux victimes de l’attentat.",
+    options: ["solennel", "commun", "extraordinaire", "sincère"],
+    answer: "commun"
+  },
+  {
+    question: "Ce n’est pas [mon boulot].",
+    options: ["mon travail", "mon affaire", "mon problème", "mon avis"],
+    answer: "mon travail"
+  },
+  {
+    question: "[Elle est fiable.]",
+    options: ["Elle est sérieuse.", "Elle n’est pas forte.", "Elle est mince.", "Elle ment souvent. "],
+    answer: "Elle est sérieuse."
+  },
+  {
+    question: "Cela m’est [indispensable]. ",
+    options: ["nécessaire", "insupportable", "douloureux", "égal"],
+    answer: "nécessaire"
+  },
+  {
+    question: "Il [se plaint de] son fils.",
+    options: ["est fier de", "se fait aider par", "prend congé de", "n’est pas content de"],
+    answer: "n’est pas content de"
+  },
+  {
+    question: "Elle a beaucoup [apprécié] ses collègues.",
+    options: ["attendu", "écouté", "aimé", "engagé"],
+    answer: "aimé"
+  },
+  {
+    question: "C’est le seul [soutien] dont j’aie besoin.",
+    options: ["conseil", "aide", "avantage", "qualité"],
+    answer: "aide"
+  },
+  {
+    question: "Quel [bonheur] !",
+    options: ["goût", "plaisir", "succès", "calme"],
+    answer: "plaisir"
+  },
+  {
+    question: "C’est une source [d’ennuis].",
+    options: ["d’anecdotes", "de malentendus", "de stress", "de problèmes"],
+    answer: "de problèmes"
+  },
+  {
+    question: "C’est [atroce].",
+    options: ["affreux", "gênant", "brave", "difficile"],
+    answer: "affreux"
+  },
+  {
+    question: "Il lui a [cédé] son poste le mois dernier.",
+    options: ["laissé", "ruiné", "renouvelé", "exercé"],
+    answer: "laissé"
+  },
+  {
+    question: "Es-tu vraiment [sincère] avec moi ?",
+    options: ["heureux", "d’accord", "mécontent", "honnête"],
+    answer: "honnête"
+  },
+  {
+    question: "[Ils ont abattu] les animaux.",
+    options: ["Ils ont repoussé", "Ils ont abandonné", "ils ont tué", "ils ont enfermé"],
+    answer: "ils ont tué"
+  },
+  {
+    question: "Qu’est-ce qu’il y a dans [le panier] ?",
+    options: ["la corbeille", "la valise", "le sandwich", "le sachet"],
+    answer: "la corbeille"
+  },
+  {
+    question: "[Vous vous moquez de moi] !",
+    options: ["Vous êtes trop gentil avec moi !", "Vous riez de moi !", "Vous ne me faites pas confiance !", "Vous êtes jaloux de moi !"],
+    answer: "Vous riez de moi !"
+  },
+  {
+    question: "Arrête de [faire la gueule] !",
+    options: ["faire la tête", "faire du bruit", "faire la difficile", "faire des grimaces"],
+    answer: "faire la tête"
+  },
+  {
+    question: "J’ai eu [un entretien] intéressant aujourd’hui.",
+    options: ["une conversation", "une réunion", "une récréation", "un moment"],
+    answer: "une conversation"
+  },
+  {
+    question: "C’est une [tâche] qui m’ennuie.",
+    options: ["un spectacle", "un livre", "un devoir", "un sujet"],
+    answer: "un devoir"
+  },
+  {
+    question: "Il a été [assassiné] à la sortie du métro.",
+    options: ["arrêté", "salué", "menacé", "tué"],
+    answer: "tué"
+  },
+  {
+    question: "[Évidemment], nous allons vous aider.",
+    options: ["Probablement", "À la fin", "Bien sûr", "De toute façon"],
+    answer: "Bien sûr"
+  },
+  {
+    question: "Il faut [rafraîchir] notre page web.",
+    options: ["mettre à bas ", "partager", "mettre à jour ", "allumer"],
+    answer: "mettre à jour "
+  },
+  {
+    question: "Nos voisins sont [carrément] fous.",
+    options: ["probablement", "vraisemblablement", "complètement", "évidemment"],
+    answer: "complètement"
+  },
+  {
+    question: "Les sciences physiques sont [accessibles aux] spécialistes uniquement.",
+    options: ["intéressantes pour les", "difficiles pour les", "compréhensibles pour les", "étudiées par les"],
+    answer: "compréhensibles pour les"
+  },
+  {
+    question: "Mon copain a eu une enfance [douloureuse].",
+    options: ["honteuse", "pénible", "dangereuse", "incertaine"],
+    answer: "pénible"
+  },
+  {
+    question: "Nous cherchons [des renseignements] supplémentaires.",
+    options: ["des informations", "des questions", "des formules", "des connaissances"],
+    answer: "des informations"
+  },
+  {
+    question: "Il [déteste] la situation actuelle.",
+    options: ["Il met en question", "Il hait", "Il provoque", "Il critique"],
+    answer: "Il hait"
+  },
+  {
+    question: "Mon professeur était assez [sévère] avec moi.",
+    options: ["dur", "gentil", "complice", "indifférent"],
+    answer: "dur"
+  },
+  {
+    question: "C’est un homme [franc].",
+    options: ["libre", "sympathique", "fatigué", "honnête"],
+    answer: "honnête"
+  },
+  {
+    question: "« [Les racines] du mal » est le titre d’un roman d’un auteur français.",
+    options: ["L’origine", "Les caractéristiques", "Les traditions", "L’évolution"],
+    answer: "L’origine"
+  },
+  {
+    question: "[Cela me convient].",
+    options: ["Cela vient vers moi", "Cela ne me va pas", "Cela m’est égal", "Cela me va bien"],
+    answer: "Cela me va bien"
+  },
+  {
+    question: "Votre initiative est [audacieuse].",
+    options: ["réaliste", "courageuse", "irréprochable", "sérieuse"],
+    answer: "courageuse"
+  },
+  {
+    question: "J’ai [un tas de choses] à faire.",
+    options: ["une faible quantité de", "des devoirs", "beaucoup de choses", "des rumeurs "],
+    answer: "beaucoup de choses"
+  },
+  {
+    question: "Ils veulent travailler [au sein des] institutions européennes.",
+    options: ["sans être dérangés par les", "dans les", "à côté des", "en collaboration avec les"],
+    answer: "dans les"
+  },
+  {
+    question: "Nous allons faire [une évaluation] de cet exercice plus tard.",
+    options: ["un bilan", "une correction", "un changement", "un remplacement"],
+    answer: "un bilan"
+  },
+  {
+    question: "Ce bel endroit se trouve [aux alentours de] Marrakech.",
+    options: ["tout autour de", "environ", "dans le centre de", "à proximité de"],
+    answer: "à proximité de"
+  },
+  {
+    question: "Je suis en train de [bosser].",
+    options: ["travailler", "m’entraîner", "mesurer", "me récupérer"],
+    answer: "travailler"
+  },
+  {
+    question: "Je crois [qu’elle est au chômage].",
+    options: ["qu’elle est très fatiguée", "qu’elle n’a pas de travail", "qu’elle n’a pas envie", "qu’elle fait ses courses"],
+    answer: "qu’elle n’a pas de travail"
+  },
+  {
+    question: "La demande ne cesse de [croître].",
+    options: ["de devenir plus chère", "de baisser", "de se compliquer", "d’augmenter"],
+    answer: "d’augmenter"
+  },
+  {
+    question: "J’ignorais  [son décès].",
+    options: ["sa disparition", "sa parution", "sa confirmation", "sa punition"],
+    answer: "sa disparition"
+  },
+  {
+    question: "Ces gens jettent [leurs déchets] par la fenêtre.",
+    options: ["leur argent", "leurs soucis", "leur talent", "leurs ordures"],
+    answer: "leurs ordures"
+  },
+  {
+    question: "« — Regarde, il fait soleil ! — Oui,  [effectivement]. »",
+    options: ["en effet", "en fait", "en principe", "en entier"],
+    answer: "en effet"
+  },
+  {
+    question: "Il avait [un fusil] à la main.",
+    options: ["un stylo", "une hache", "une flute", "une arme"],
+    answer: "une arme"
+  },
+  {
+    question: "Ils forment un couple [harmonieux].",
+    options: ["sympathique", "désastreux", "équilibré", "sérieux"],
+    answer: "équilibré"
+  },
+  {
+    question: "[Je n’y vois pas d’inconvénient].",
+    options: ["Cela ne me convient pas.", "Cela me convient.", "Cela me dérange.", "Je n’y vois pas d’avantage."],
+    answer: "Cela me convient."
+  },
+  {
+    question: "C’est [odieux].",
+    options: ["rare", "exécrable", "amusant", "abordable"],
+    answer: "exécrable"
+  },
+  {
+    question: "Cette chaîne a de nombreux [salariés].",
+    options: ["filiales", "problèmes ", "ouvriers", "caisses"],
+    answer: "ouvriers"
+  },
+  {
+    question: "– Tiens, il fait  [vachement] chaud ici.",
+    options: ["assez", "trop", "enfin", "extrêmement"],
+    answer: "extrêmement"
+  },
+  {
+    question: "Le gouvernement est en train d’[élaborer] une stratégie nationale d’emploi.",
+    options: ["discuter", "essayer", "mettre en question", "développer"],
+    answer: "développer"
+  },
+  {
+    question: "Le magasin est [quasiment] vide.",
+    options: ["toujours", "presque", "souvent", "même"],
+    answer: "presque"
+  },
+  {
+    question: "On [a diffusé] les résultats du projet.",
+    options: ["a caché", "a oublié", "a distribué", "a regardé"],
+    answer: "a distribué"
+  },
+  {
+    question: "En pleine nuit, j'ai entendu [un hurlement]. ",
+    options: ["un cri", "un bruit", "un bourdonnement", "un ronflement"],
+    answer: "un cri"
+  },
+  {
+    question: "Je n'ai plus [de sous].",
+    options: ["de courage", "d'argent", "d'amis", "d'énergie"],
+    answer: "d'argent"
+  },
+  {
+    question: "[Je n’en étais pas conscient.]",
+    options: ["Je ne m’en étais pas rendu compte.", "Je n’avais pas fait sa connaissance.", "Je ne l’ignorais pas.", "Je m’étais trompé."],
+    answer: "Je ne m’en étais pas rendu compte."
+  },
+  {
+    question: "Arrête de [gueuler] !",
+    options: ["te plaindre", "parler", "hurler", "gronder"],
+    answer: "hurler"
+  },
+  {
+    question: "Il l’a fait [exprès].",
+    options: ["rapidement", "lentement", "intentionnellement", "sans le savoir"],
+    answer: "intentionnellement"
+  },
+  {
+    question: "Mon copain est [rigolo].",
+    options: ["ennuyeux", "drôle", "joyeux", "exigeant"],
+    answer: "drôle"
+  },
+  {
+    question: "[Jules est apte au travail].",
+    options: ["Jules ose travailler.", "Jules doit travailler.", "Jules veut travailler.", "Jules peut travailler."],
+    answer: "Jules peut travailler."
+  },
+  {
+    question: "Il a fait [une blague].",
+    options: ["une poche", "une annonce", "une plaisanterie", "une alliance"],
+    answer: "une plaisanterie"
+  },
+  {
+    question: "[Il a remboursé] cet argent.",
+    options: ["il a volé", "il a rendu", "il a empoché", "il a emprunté"],
+    answer: "il a rendu"
+  },
+  {
+    question: "Nous avons réussi à [combler] le retard.",
+    options: ["profiter de", "rattraper", "éviter", "oublier"],
+    answer: "rattraper"
+  },
+  {
+    question: "J'ai eu une remarque [pertinente].",
+    options: ["choquante", "adéquate", "positive", "méchante "],
+    answer: "adéquate"
+  },
+  {
+    question: " [Son exposé] était formidable.",
+    options: ["son travail", "sa présentation", "son tableau", "son exposition"],
+    answer: "sa présentation"
+  },
+  {
+    question: "[Que me reprochez-vous ?] ",
+    options: ["Quelle faute ai-je commise ?", "Qu’auriez-vous fait à ma place ?", "Qu’est-ce que vous me proposez ?", "Pourquoi êtes-vous à côté de moi ?"],
+    answer: "Quelle faute ai-je commise ?"
+  },
+  {
+    question: "C’est un [artisan] habile. ",
+    options: ["écrivain", "artiste", "ouvrier", "musicien"],
+    answer: "ouvrier"
+  },
+  {
+    question: "Il m’a expliqué [les objectifs] de l’entreprise.",
+    options: ["les idées", "les demandes", "les buts", "les responsabilités"],
+    answer: "les buts"
+  },
+  {
+    question: "Un mur épais [soutient] le bâtiment.",
+    options: ["défend", "protège", "supporte", "entoure"],
+    answer: "supporte"
+  },
+  {
+    question: "Nous allons [acquérir] une propriété en Provence.",
+    options: ["acheter", "visiter", "rénover", "accepter"],
+    answer: "acheter"
+  },
+  {
+    question: "Est-ce que tu as vu [mes valises] ? Je ne les trouve pas. ",
+    options: ["mes objets", "mes vestes", "mes dossiers", "mes bagages"],
+    answer: "mes bagages"
+  },
+  {
+    question: "Il a [protégé] sa femme toute sa vie. ",
+    options: ["gardé", "défendu", "condamné", "découragé"],
+    answer: "défendu"
+  },
+  {
+    question: "C’est [purement] une question d’argent. ",
+    options: ["seulement", "particulièrement", "exactement", "rarement"],
+    answer: "seulement"
+  },
+  {
+    question: "Nous habitons dans une ferme [voisine].  ",
+    options: ["voilée", "familiale", "proche", "parfaite"],
+    answer: "proche"
+  },
+  {
+    question: "Il m’a expliqué [les responsabilités] des étudiants.  ",
+    options: ["les idées", "les demandes", "les buts", "les devoirs"],
+    answer: "les devoirs"
+  },
+  {
+    question: "Je crois [qu’elle est en congé].  ",
+    options: ["qu’elle est fatiguée", "qu’elle est sans travail", "qu’elle est malade", "qu’elle est en vacances"],
+    answer: "qu’elle est en vacances"
+  },
+  {
+    question: "Il a [quitté] son foyer le mois dernier. ",
+    options: ["renouvelé", "ruiné", "abandonné", "exercé"],
+    answer: "abandonné"
+  },
+  {
+    question: "Nous pouvons [accéder] à la propriété par une petite allée.  ",
+    options: ["arriver", "visiter", "rénover", "accepter"],
+    answer: "arriver"
+  },
+  {
+    question: "Le magasin est [pratiquement] vide.  ",
+    options: ["toujours", "presque", "souvent", "même"],
+    answer: "presque"
+  },
+  {
+    question: "C’est un grand [tournoi] sportif qui aura lieu au mois de mai.",
+    options: ["événement", "concours", "mélange", "arrangement"],
+    answer: "concours"
+  },
+  {
+    question: "Son frère [balayait] le trottoir.",
+    options: ["se promenait sur ", "nettoyait", "préférait", "roulait sur"],
+    answer: "nettoyait"
+  },
+  {
+    question: "Elle [a un creux]. ",
+    options: ["est seule ", "a une idée", "a faim", "est pressée"],
+    answer: "a faim"
+  },
+  {
+    question: "Son intention est de [dissimuler] la vérité.",
+    options: ["révéler", "dire", "diffuser", "cacher"],
+    answer: "cacher"
+  },
+  {
+    question: "[Je parie] que c’est lui. ",
+    options: ["Je dis ", "J’ajoute", "Je répète", "Je suis sûr"],
+    answer: "Je suis sûr"
+  },
+  {
+    question: "Ce n’est pas un problème à [redouter].",
+    options: ["rejeter", "éviter", "craindre", "résoudre"],
+    answer: "craindre"
+  },
+  {
+    question: "Nous n’avons pas eu le temps de [souffler] après l’examen.",
+    options: ["bricoler", "nous reposer", "bavarder", "nous réchauffer"],
+    answer: "nous reposer"
+  },
+  {
+    question: "Ils [avaient hâte de] retourner à l’école.",
+    options: ["ne voulaient pas", "étaient pressés de", "se devaient de", "étaient décidés à"],
+    answer: "ne voulaient pas"
+  },
+  {
+    question: "Il faut [améliorer] les performances des élèves.",
+    options: ["équilibrer", "perfectionner", "noter", "décrire"],
+    answer: "perfectionner"
+  },
+  {
+    question: "[Je n’ose pa]s le faire.",
+    options: ["Je n’ai pas besoin de", "Je n’ai pas le courage de", "Je n’ai pas envie de", "Je n’ai pas la conscience de"],
+    answer: "Je n’ai pas le courage de"
+  },
+  {
+    question: "Cet évènement lui a causé beaucoup [de chagrin].",
+    options: ["de joie", "de travail", "de douleur", "d’éloges"],
+    answer: "de douleur"
+  },
+  {
+    question: "[Par conséquent], elle n'est pas venue.",
+    options: ["Autrement", "En outre  ", "Malheureusement", "Du coup"],
+    answer: "Du coup"
+  },
+  {
+    question: "Qu'aviez-vous fait [la veille] ?",
+    options: ["au réveil", "auparavant", "le jour précédent", "avant minuit"],
+    answer: "le jour précédent"
+  },
+  {
+    question: "Cela [m'étonne].",
+    options: ["m'agace ", "me surprend", "me satisfait", "m'arrange"],
+    answer: "me surprend"
+  },
+  {
+    question: "Je [ne m’en suis pas aperçu].",
+    options: ["ne l’ai pas essayé ", "ne m’y suis pas présenté", "ne l’ai pas appris", "ne l’ai pas remarqué"],
+    answer: "ne l’ai pas remarqué"
+  },
+  {
+    question: "Ma sœur est conseillère [municipale].",
+    options: ["de la ville", "du département", "de la région", "du gouvernement"],
+    answer: "de la ville"
+  },
+  {
+    question: "Je ne vous [oblige] pas. ",
+    options: ["force", "retiens", "remercie", "pardonne"],
+    answer: "force"
+  },
+  {
+    question: "Il est temps d’en faire [le bilan].",
+    options: ["la conclusion", "le pire", "le reste", "le gros du travail"],
+    answer: "la conclusion"
+  },
+  {
+    question: "Elles [sont déçues].",
+    options: ["ne sont pas contentes", "manquent", "ne sont pas au courant ", "sont là-haut"],
+    answer: "ne sont pas contentes"
+  },
+  {
+    question: "Ils [vont échouer].",
+    options: ["vont tomber", "vont faire leur mieux", "ne vont pas se présenter", "ne vont pas réussir"],
+    answer: "ne vont pas réussir"
+  },
+  {
+    question: "J’étudie le droit [fiscal].",
+    options: ["relatif aux peines", "relatif aux assurances", "relatif aux impôts", "relatif à la constitution"],
+    answer: "relatif aux impôts"
+  },
+  {
+    question: "Mais qu’est-ce que c’est que [cette foule] ?!",
+    options: ["cet individu dérangé", "cette masse de gens", "cette bêtise", "cette question idiote"],
+    answer: "cette masse de gens"
+  },
+  {
+    question: "On [l’a fait taire].",
+    options: ["lui a menti", "lui a imposé le silence", "l’a mis à mort", "l’a emprisonné"],
+    answer: "lui a imposé le silence"
+  }
+];
+
+    let selectedQuestions = [];
+    let userAnswers = [];
+    let current = 0;
+    let score = 0;
+
+    function shuffle(array) {
+      return array.sort(() => Math.random() - 0.5);
+    }
+
+    function startQuiz() {
+      const num = parseInt(document.getElementById("numQuestions").value);
+      selectedQuestions = shuffle(questions).slice(0, num);
+      userAnswers = [];
+      current = 0;
+      score = 0;
+      document.getElementById("score").textContent = "";
+      document.getElementById("result").textContent = "";
+      document.getElementById("nextBtn").style.display = "inline";
+      showQuestion();
+    }
+
+    function showQuestion() {
+      const q = selectedQuestions[current];
+      const container = document.getElementById("quiz-container");
+      container.innerHTML = `
+        <div class="question">
+          <p><strong>Fråga ${current + 1}:</strong> ${q.question}</p>
+          ${q.options.map(option => `
+            <label>
+              <input type="radio" name="answer" value="${option}"> ${option}
+            </label><br>
+          `).join("")}
+        </div>
+      `;
+      document.getElementById("result").textContent = "";
+    }
+
+    function nextQuestion() {
+      const selected = document.querySelector('input[name="answer"]:checked');
+      if (!selected) {
+        alert("Välj ett alternativ!");
+        return;
+      }
+
+      const answer = selected.value;
+      const correct = selectedQuestions[current].answer;
+      userAnswers.push(answer);
+
+      const result = document.getElementById("result");
+
+      if (answer === correct) {
+        result.textContent = "Rätt!";
+        score++;
+      } else {
+        result.textContent = `Fel. Rätt svar är: ${correct}`;
+      }
+
+      current++;
+
+      if (current < selectedQuestions.length) {
+        setTimeout(showQuestion, 1000);
+      } else {
+        document.getElementById("quiz-container").innerHTML = "<p>Quizet är klart!</p>";
+        document.getElementById("nextBtn").style.display = "none";
+        document.getElementById("score").textContent = `Du fick ${score} av ${selectedQuestions.length} rätt.`;
+
+        showSummary();
+
+        setTimeout(() => {
+          if (confirm("Vill du göra om quizet?")) {
+            startQuiz();
+          }
+        }, 2000);
+      }
+    }
+
+    function showSummary() {
+      let summaryHtml = "<h3>Sammanfattning:</h3><ol>";
+      for (let i = 0; i < selectedQuestions.length; i++) {
+        const q = selectedQuestions[i];
+        const userAnswer = userAnswers[i];
+        const isCorrect = userAnswer === q.answer;
+        summaryHtml += `<li>
+          <strong>${q.question}</strong><br>
+          Ditt svar: <span style="color:${isCorrect ? 'green' : 'red'}">${userAnswer}</span><br>
+          Rätt svar: ${q.answer}
+        </li><br>`;
+      }
+      summaryHtml += "</ol>";
+      document.getElementById("quiz-container").innerHTML += summaryHtml;
+    }
+  
+  </script>
+
+</body>
+</html>
