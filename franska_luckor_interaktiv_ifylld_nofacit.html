@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Franska luckor – skriv svaret & visa bokstäver</title>
+<style>
+  :root { --ok:#0a7f2e; --err:#b80d2e; --muted:#666; }
+  body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; line-height: 1.55; padding: 24px; max-width: 1100px; margin: 0 auto; }
+  h1 { font-size: 1.6rem; margin: 0 0 6px 0; }
+  .meta { color: #555; margin-bottom: 14px; }
+  .topbar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom: 12px; }
+  .search { padding:8px 10px; border:1px solid #ccc; border-radius:8px; min-width:280px; }
+  .btn { padding:8px 10px; border-radius:8px; border:1px solid #ccc; background:#f7f7f7; cursor:pointer; }
+  .btn:hover { background:#eee; }
+  .small { font-size: .9rem; color: #666; }
+  .item { border: 1px solid #e3e3e3; border-radius: 12px; padding: 14px; margin: 12px 0; }
+  .sv { color:#333; margin-bottom:6px; }
+  .fr { font-size: 1.08rem; margin-bottom: 10px; }
+  .gapline { display: inline-flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .gap { min-width: 180px; border-bottom: 2px solid #000; height: 1.2em; vertical-align: baseline; }
+  .reveal { font-weight: 600; letter-spacing: .5px; min-width: 1ch; display:inline-block; }
+  .inwrap { display:inline-flex; align-items:center; gap:8px; flex-wrap: wrap; }
+  input[type="text"] { padding:6px 8px; border:1px solid #bbb; border-radius:8px; min-width: 240px; font-size: 1rem; }
+  .ok { color: var(--ok); font-weight: 600; }
+  .bad { color: var(--err); font-weight: 600; }
+  .controls { display:flex; gap:8px; flex-wrap: wrap; margin-top: 8px; }
+  .muted { color:var(--muted); }
+  .hidden { display:none; }
+</style>
+</head>
+<body>
+<h1>Franska luckor – skriv svaret och/eller visa bokstäver</h1>
+<div class="meta">
+  Varje kort har en svensk ledtråd, en fransk mening och en lucka.
+  Du kan <strong>skriva in svaret</strong> (ofta inkl. artikel) och klicka <em>Kolla</em>,
+  eller använda knapparna för att visa <strong>1</strong>, <strong>2</strong>, <strong>3</strong> bokstäver och <strong>hela ordet</strong>.
+  Rättning är <em>accent- och skiftlägesokänslig</em>.
+</div>
+
+<div class="topbar">
+  <input id="q" class="search" type="search" placeholder="Sök i svenska förklaringar eller franska meningar…">
+  <button class="btn" onclick="resetAll()">Återställ alla</button>
+  <button class="btn" onclick="showAllKeys()">Visa facit för alla</button>
+  <button class="btn" onclick="hideAllKeys()">Dölj facit</button>
+  <span class="small">Tips: Spara som fil och dela till studenter. Fungerar offline.</span>
+</div>
+
+<div id="list"></div>
+
+<script>
+const data = [
+  {sv: "absolut", frA: "Il est ", key: "absolument", frB: " nécessaire de comprendre la règle avant de l’appliquer."},
+  {sv: "ett fängelse", frA: "Le criminel a été envoyé dans ", key: "une prison", frB: " de haute sécurité."},
+  {sv: "bekräfta", frA: "Je voudrais ", key: "confirmer", frB: " ma réservation pour demain soir."},
+  {sv: "en lön", frA: "Elle reçoit ", key: "un salaire", frB: " correct pour son travail."},
+  {sv: "en läsning", frA: "Cette semaine, nous avons fait ", key: "une lecture", frB: " collective du roman."},
+  {sv: "bidra", frA: "Tous doivent ", key: "contribuer", frB: " à la réussite du projet."},
+  {sv: "angripa", frA: "L’armée a décidé d’", key: "attaquer", frB: " à l’aube."},
+  {sv: "ett bord", frA: "Ils ont posé les assiettes sur ", key: "une table", frB: " en bois."},
+  {sv: "hädanefter", frA: "Il faut ", key: "désormais", frB: " respecter les nouvelles règles."},
+  {sv: "tung", frA: "Ce sac est trop ", key: "lourd", frB: " pour moi."},
+  {sv: "framkalla", frA: "Ce discours a su ", key: "susciter", frB: " beaucoup d’émotion."},
+  {sv: "en republik", frA: "La France est ", key: "une république", frB: " depuis 1870."},
+  {sv: "hård", frA: "Ce travail est vraiment ", key: "dur", frB: " à accomplir."},
+  {sv: "innehålla", frA: "Cette boîte peut ", key: "contenir", frB: " jusqu’à dix kilos."},
+  {sv: "lämna av", frA: "Il va ", key: "déposer", frB: " ses bagages à l’hôtel."},
+  {sv: "ändra", frA: "On doit ", key: "modifier", frB: " le contrat avant de le signer."},
+  {sv: "en kommunikation", frA: "Nous avons reçu ", key: "une communication", frB: " officielle du ministère."},
+  {sv: "ett misslyckande", frA: "Son projet a été ", key: "un échec", frB: " total."},
+  {sv: "förvandla", frA: "L’expérience va ", key: "transformer", frB: " sa vie."},
+  {sv: "en bror", frA: "Il a ", key: "un frère", frB: " plus jeune."},
+  {sv: "en omröstning", frA: "Les citoyens participeront à ", key: "un vote", frB: " important."},
+  {sv: "ångra", frA: "Je ne peux que ", key: "regretter", frB: " mes erreurs."},
+  {sv: "en art", frA: "C’est ", key: "une espèce", frB: " rare d’oiseau."},
+  {sv: "en rekommendation", frA: "Le médecin a donné ", key: "une recommandation", frB: " précise."},
+  {sv: "bestå av", frA: "Le travail va ", key: "consister", frB: " à analyser les données."},
+  {sv: "förvåna", frA: "Cette nouvelle va sûrement le ", key: "surprendre", frB: "."},
+  {sv: "en omständighet", frA: "Dans cette ", key: "circonstance", frB: ", il faut rester calme."},
+  {sv: "ett vittne", frA: "La police a interrogé ", key: "un témoin", frB: "."},
+  {sv: "förbättra", frA: "Il veut ", key: "améliorer", frB: " ses compétences en français."},
+  {sv: "administrera", frA: "Le directeur doit ", key: "administrer", frB: " les fonds."},
+  {sv: "fundera", frA: "Il faut bien ", key: "réfléchir", frB: " avant de décider."},
+  {sv: "ett ljus", frA: "La bougie diffuse ", key: "une lumière", frB: " douce."},
+  {sv: "grön", frA: "Le feu de signalisation est passé au ", key: "vert", frB: "."},
+  {sv: "uppskatta", frA: "J’ai beaucoup appris à ", key: "apprécier", frB: " son humour."},
+  {sv: "en kamp", frA: "La paix a été gagnée après ", key: "un combat", frB: " difficile."},
+  {sv: "känslig", frA: "Elle est très ", key: "sensible", frB: " aux critiques."},
+  {sv: "Tack!", frA: "", key: "Merci", frB: " de votre aide !"},
+  {sv: "ett besök", frA: "Ils ont fait ", key: "une visite", frB: " au musée."},
+  {sv: "en församling", frA: "Le président a parlé devant ", key: "une assemblée", frB: "."},
+  {sv: "ett program", frA: "Nous avons regardé ", key: "une émission", frB: " intéressante hier soir."},
+  {sv: "en revolution", frA: "1789 marque le début d’", key: "une révolution", frB: "."},
+  {sv: "en partner", frA: "Elle est ", key: "une partenaire", frB: " de confiance."},
+  {sv: "förnöja", frA: "Ce cadeau suffit à le ", key: "contenter", frB: "."},
+  {sv: "en medborgare", frA: "Chaque ", key: "citoyen", frB: " a des droits et des devoirs."},
+  {sv: "citera", frA: "L’article va ", key: "citer", frB: " plusieurs exempel."},
+  {sv: "en påverkan", frA: "La publicité exerce ", key: "une influence", frB: " considérable."},
+  {sv: "ett läger", frA: "Ils ont dressé ", key: "un camp", frB: " près de la rivière."},
+  {sv: "avsedd", frA: "Ce livre est ", key: "destiné", frB: " aux étudiants."},
+  {sv: "en mästare", frA: "L’élève respecte son ", key: "maître", frB: "."},
+  {sv: "förhöra", frA: "La police va ", key: "interroger", frB: " le suspect."},
+  {sv: "en konferens", frA: "Il assiste à ", key: "une conférence", frB: " internationale."},
+  {sv: "föranleda", frA: "La nouvelle a pu ", key: "provoquer", frB: " une crise."},
+  {sv: "en soldat", frA: "Mon grand-père était ", key: "un soldat", frB: " pendant la guerre."},
+  {sv: "en kollega", frA: "Elle déjeune avec ", key: "un collègue", frB: " sympathique."},
+  {sv: "utforma", frA: "On peut ", key: "concevoir", frB: " un plan différent."},
+  {sv: "en tyngd", frA: "Le sac a ", key: "un poids", frB: " de cinq kilos."},
+  {sv: "förvärva", frA: "Elle veut ", key: "acquérir", frB: " de nouvelles connaissances."},
+  {sv: "passa", frA: "Cette solution peut ", key: "convenir", frB: " à tout le monde."},
+  {sv: "logisk", frA: "Ta remarque est très ", key: "logique", frB: "."},
+  {sv: "undersöka", frA: "Le médecin doit ", key: "examiner", frB: " le patient."},
+  {sv: "en vård", frA: "Le docteur prodigue ", key: "un soin", frB: " attentif."},
+  {sv: "involvera", frA: "Ce projet pourrait ", key: "impliquer", frB: " plusieurs pays."},
+  {sv: "en individ", frA: "La police recherche ", key: "un individu", frB: " dangereux."},
+  {sv: "halv", frA: "Il a mangé une ", key: "demi", frB: " pomme."},
+  {sv: "omfatta", frA: "La fête va ", key: "comporter", frB: " plusieurs aktiviteter."},
+  {sv: "förtjäna", frA: "Son travail acharné va ", key: "mériter", frB: " une récompense."},
+  {sv: "låna", frA: "Je vais ", key: "emprunter", frB: " ce livre à la bibliothèque."},
+  {sv: "ett samvete", frA: "Il a ", key: "une conscience", frB: " très claire du danger."},
+  {sv: "översätta", frA: "Il sait ", key: "traduire", frB: " un texte anglais."},
+  {sv: "blod", frA: "Le chirurgien arrête ", key: "le sang", frB: "."},
+  {sv: "ett initiativ", frA: "Ils ont lancé ", key: "une initiative", frB: " pour l’écologie."},
+  {sv: "kärnkrafts-", frA: "L’énergie ", key: "nucléaire", frB: " reste controversée."},
+  {sv: "ett undantag", frA: "Il y a toujours ", key: "une exception", frB: " à la règle."},
+  {sv: "ett sätt", frA: "On change souvent ", key: "un mode", frB: " de transport."},
+  {sv: "räcka", frA: "Il veut ", key: "tendre", frB: " la main à son ami."},
+  {sv: "en musik", frA: "J’écoute souvent ", key: "une musique", frB: " douce."},
+  {sv: "en förvaltning", frA: "L’entreprise assure ", key: "une gestion", frB: " efficace."},
+  {sv: "vidsträckt", frA: "Ce pays est ", key: "vaste", frB: " et riche en ressources."},
+  {sv: "påminna om", frA: "L’auteur va ", key: "évoquer", frB: " ses souvenirs."},
+  {sv: "en etapp", frA: "Ceci représente ", key: "une étape", frB: " importante."},
+  {sv: "fysisk", frA: "Le sport est bon pour la santé ", key: "physique", frB: "."},
+  {sv: "anklaga", frA: "Le procureur va ", key: "accuser", frB: " le suspect."},
+  {sv: "perfekt", frA: "Elle parle ", key: "parfaitement", frB: " espagnol."},
+  {sv: "en metod", frA: "Cette recherche suit ", key: "une méthode", frB: " scientifique."},
+  {sv: "en lärare", frA: "Il est professeur, c’est ", key: "un professeur", frB: " de mathématiques."},
+  {sv: "dela ut", frA: "La société doit ", key: "distribuer", frB: " des dividendes."},
+  {sv: "påstå", frA: "Il aime ", key: "prétendre", frB: " qu’il a toujours raison."},
+  {sv: "global", frA: "Le réchauffement est un phénomène ", key: "global", frB: "."},
+  {sv: "en skada", frA: "L’accident a causé ", key: "un dommage", frB: " matériel."},
+  {sv: "en kredit", frA: "Il demande ", key: "un crédit", frB: " bancaire."},
+  {sv: "en tendens", frA: "Il y a ", key: "une tendance", frB: " à consommer plus."},
+  {sv: "en tv-kanal", frA: "Ils regardent ", key: "une chaîne", frB: " de télévision."},
+  {sv: "relativ", frA: "Le lien entre eux est ", key: "relatif", frB: "."},
+  {sv: "ett maximum", frA: "Elle a obtenu ", key: "un maximum", frB: " de points."},
+  {sv: "en motor", frA: "La voiture a ", key: "un moteur", frB: " puissant."},
+  {sv: "en version", frA: "Ils ont téléchargé ", key: "une version", frB: " récente du logiciel."},
+  {sv: "ett par", frA: "Ils forment ", key: "un couple", frB: " heureux."},
+  {sv: "utvidga", frA: "On peut ", key: "étendre", frB: " une couverture sur le sol."},
+  {sv: "djup", frA: "Cet océan est très ", key: "profond", frB: "."},
+  {sv: "beskriva", frA: "Peux-tu ", key: "décrire", frB: " cette image ?"},
+];
+
+function normalize(s){
+  return (s||"").toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[’]/g,"'")
+    .replace(/\s+/g,' ').trim();
+}
+
+function render(items){
+  const list = document.getElementById('list');
+  list.innerHTML = '';
+  items.forEach((it, idx) => {
+    const id = 'item_'+idx;
+    const wrap = document.createElement('div');
+    wrap.className = 'item';
+    wrap.id = id;
+    wrap.dataset.answer = it.key;
+
+    wrap.innerHTML = `
+      <div class="sv">(${it.sv})</div>
+      <div class="fr">
+        <span class="gapline">
+          <span>${it.frA}</span>
+          <span class="gap"><span id="${id}_reveal" class="reveal"></span></span>
+          <span>${it.frB}</span>
+        </span>
+      </div>
+      <div class="inwrap">
+        <input id="${id}_in" type="text" placeholder="Skriv hela uttrycket här">
+        <button class="btn" onclick="checkAns('${id}')">Kolla</button>
+        <button class="btn" onclick="fillFromReveal('${id}')">Fyll i visat</button>
+        <span id="${id}_fb" class=""></span>
+      </div>
+      <div class="controls">
+        <button class="btn" onclick="step('${id}', 1)">Visa 1</button>
+        <button class="btn" onclick="step('${id}', 2)">Visa 2</button>
+        <button class="btn" onclick="step('${id}', 3)">Visa 3</button>
+        <button class="btn" onclick="step('${id}', 999)">Visa allt</button>
+        <button class="btn" onclick="resetOne('${id}')">Återställ</button>
+        <button class="btn" onclick="toggleKey('${id}')">Visa/Dölj facit (lokalt)</button>
+      </div>
+      <div id="${id}_key" class="muted hidden">Facit: ${it.key}</div>
+    `;
+    list.appendChild(wrap);
+
+    const inp = wrap.querySelector('#'+id+'_in');
+    inp.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter'){ checkAns(id); }
+    });
+  });
+}
+
+function step(id, n){
+  const wrap = document.getElementById(id);
+  const ans = wrap.dataset.answer || '';
+  const out = document.getElementById(id+'_reveal');
+  if(n === 0){ out.textContent = ''; return; }
+  if(n >= ans.length){ out.textContent = ans; return; }
+  out.textContent = ans.slice(0, n);
+}
+
+function fillFromReveal(id){
+  const out = document.getElementById(id+'_reveal');
+  const inp = document.getElementById(id+'_in');
+  inp.value = out.textContent || '';
+  inp.focus();
+}
+
+function checkAns(id){
+  const wrap = document.getElementById(id);
+  const gold = normalize(wrap.dataset.answer);
+  const inp = document.getElementById(id+'_in');
+  const fb = document.getElementById(id+'_fb');
+  const user = normalize(inp.value);
+  if(!user){ fb.textContent = "Skriv ett svar."; fb.className = 'muted'; return; }
+  if(user === gold){
+    fb.textContent = "Rätt!"; fb.className = 'ok';
+    inp.style.borderColor = 'var(--ok)';
+    document.getElementById(id+'_reveal').textContent = wrap.dataset.answer;
+  }else{
+    fb.textContent = "Inte riktigt – prova igen."; fb.className = 'bad';
+    inp.style.borderColor = 'var(--err)';
+  }
+}
+
+function resetOne(id){
+  const wrap = document.getElementById(id);
+  document.getElementById(id+'_reveal').textContent = '';
+  const inp = document.getElementById(id+'_in');
+  inp.value = ''; inp.style.borderColor = '#bbb';
+  const fb = document.getElementById(id+'_fb'); fb.textContent=''; fb.className='';
+  document.getElementById(id+'_key').classList.add('hidden');
+}
+
+function resetAll(){
+  document.querySelectorAll('.item').forEach(w => resetOne(w.id));
+}
+
+function showAllKeys(){
+  document.querySelectorAll('.item').forEach(w => {
+    const key = w.querySelector('[id$="_key"]');
+    key.classList.remove('hidden');
+  });
+}
+function hideAllKeys(){
+  document.querySelectorAll('.item').forEach(w => {
+    const key = w.querySelector('[id$="_key"]');
+    key.classList.add('hidden');
+  });
+}
+function toggleKey(id){
+  const el = document.getElementById(id+'_key');
+  el.classList.toggle('hidden');
+}
+
+// Search/filter
+function normalize(s){
+  return (s||"").toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[’]/g,"'")
+    .replace(/\s+/g,' ').trim();
+}
+
+const allData = data.slice();
+function doFilter(){
+  const val = normalize(document.getElementById('q').value);
+  const filtered = !val ? allData : allData.filter(it =>
+    normalize(it.sv).includes(val) ||
+    normalize(it.key).includes(val) ||
+    normalize(it.frA + it.frB).includes(val)
+  );
+  render(filtered);
+}
+
+render(allData);
+document.getElementById('q').addEventListener('input', doFilter);
+</script>
+</body>
+</html>
